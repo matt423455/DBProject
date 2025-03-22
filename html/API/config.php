@@ -8,7 +8,7 @@
  $servername = "localhost";
  $username = "root";
  $password = "";
- $dbname = "myDB";
+ $dbname = "college_events";
  
  // Create connection
  $conn = new mysqli($servername, $username, $password, $dbname);
