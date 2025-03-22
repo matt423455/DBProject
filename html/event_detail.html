@@ -35,7 +35,7 @@
     // Fetch event details from the API
     async function fetchEventDetails() {
       try {
-        let res = await fetch("API/event_detail.php?event_id=" + event_id);
+        let res = await fetch("API/event_details.php?event_id=" + event_id);
         let data = await res.json();
         if (data.success) {
           document.getElementById("event-name").textContent = data.data.name;
