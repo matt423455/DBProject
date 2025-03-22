@@ -6,8 +6,8 @@
  }
  
  $servername = "localhost";
- $username = "root";
- $password = "";
+ $username = "appuser";
+ $password = "yourStrongPassword";
  $dbname = "college_events";
  
  // Create connection
