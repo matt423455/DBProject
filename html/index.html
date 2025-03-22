@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Basic Login/Register</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <div>
+        <label>
+            Username:
+            <input type="text" id="login-username">
+        </label>
+    </div>
+    <div>
+        <label>
+            Password:
+            <input type="password" id="login-password">
+        </label>
+    </div>
+    <button onclick="loginUser()">Login</button>
+    <p id="login-message"></p>
+
+    <hr>
+
+    <h1>Register</h1>
+    <div>
+        <label>
+            Username:
+            <input type="text" id="reg-username">
+        </label>
+    </div>
+    <div>
+        <label>
+            Email:
+            <input type="text" id="reg-email">
+        </label>
+    </div>
+    <div>
+        <label>
+            Password:
+            <input type="password" id="reg-password">
+        </label>
+    </div>
+    <div>
+        <label>
+            University ID:
+            <input type="number" id="reg-university-id">
+        </label>
+    </div>
+    <button onclick="registerUser()">Register</button>
+    <p id="register-message"></p>
+
+    <script src="scripts/script.js"></script>
+</body>
+</html>
