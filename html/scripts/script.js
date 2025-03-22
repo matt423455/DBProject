@@ -27,7 +27,7 @@ async function loginUser() {
             msgEl.textContent = "Login successful! (User ID: " + (data.user_id || "N/A") + ")";
             // Optionally redirect, e.g.:
             setTimeout(() => {
-                window.location.href = "events.php";
+                window.location.href = "events.html";
             }, 1000);
 
             // window.location.href = "dashboard.html";
