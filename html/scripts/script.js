@@ -26,6 +26,10 @@ async function loginUser() {
         } else {
             msgEl.textContent = "Login successful! (User ID: " + (data.user_id || "N/A") + ")";
             // Optionally redirect, e.g.:
+            setTimeout(() => {
+                window.location.href = "events.php";
+            }, 1000);
+
             // window.location.href = "dashboard.html";
         }
     } catch (err) {

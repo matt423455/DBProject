@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Event Details</title>
+    <style>
+        .comment {
+            border: 1px solid #ccc;
+            padding: 5px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="event-name">Event Details</h1>
+    <div id="event-details">Loading event details...</div>
+
+    <h2>Comments</h2>
+    <div id="comments-container">Loading comments...</div>
+
+    <h3>Add a Comment</h3>
+    <textarea id="comment-text" rows="4" cols="50" placeholder="Write your comment here..."></textarea><br>
+    <button onclick="postComment()">Post Comment</button>
+    <p id="comment-message"></p>
+
+    <script>
+    // Extract event_id from the URL query parameters
+    const params = new URLSearchParams(window.location.search);
+    const event_id = params.get("event_id");
+    if (!event_id) {
+      document.body.innerHTML = "<h2>Error: No event specified.</h2>";
+      throw new Error("No event_id in URL.");
+    }
+
+    // Fetch event details from the API
+    async function fetchEventDetails() {
+      try {
+        let res = await fetch("API/event_detail.php?event_id=" + event_id);
+        let data = await res.json();
+        if (data.success) {
+          document.getElementById("event-name").textContent = data.data.name;
+          document.getElementById("event-details").innerHTML = `
+            <p><strong>Category:</strong> ${data.data.event_category}</p>
+            <p><strong>Description:</strong> ${data.data.description}</p>
+            <p><strong>Date:</strong> ${data.data.event_date} at ${data.data.event_time}</p>
+            <p><strong>Location:</strong> ${data.data.location_name || "N/A"}</p>
+            <p><strong>Contact:</strong> ${data.data.contact_email || ""} ${data.data.contact_phone || ""}</p>
+          `;
+        } else {
+          document.getElementById("event-details").textContent = data.message;
+        }
+      } catch (err) {
+        document.getElementById("event-details").textContent = "Error: " + err.message;
+      }
+    }
+
+    // Fetch comments for this event from the API
+    async function fetchComments() {
+      try {
+        let res = await fetch("API/comments.php?event_id=" + event_id);
+        let data = await res.json();
+        let container = document.getElementById("comments-container");
+        container.innerHTML = "";
+        if (data.success && data.data.length > 0) {
+          data.data.forEach(comment => {
+            let div = document.createElement("div");
+            div.classList.add("comment");
+            div.innerHTML = `<p>${comment.comment_text}</p>
+                             <p><small>By ${comment.username} on ${comment.created_at}</small></p>`;
+            container.appendChild(div);
+          });
+        } else {
+          container.innerHTML = "No comments yet.";
+        }
+      } catch (err) {
+        document.getElementById("comments-container").textContent = "Error loading comments: " + err.message;
+      }
+    }
+
+    // Post a new comment using the API
+    async function postComment() {
+      const commentText = document.getElementById("comment-text").value.trim();
+      const msgEl = document.getElementById("comment-message");
+      msgEl.textContent = "";
+
+      if (!commentText) {
+        msgEl.textContent = "Please write a comment before posting.";
+        return;
+      }
+
+      try {
+        let res = await fetch("API/comments.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ event_id, comment_text: commentText })
+        });
+        let data = await res.json();
+        if (data.success) {
+          msgEl.textContent = "Comment posted successfully.";
+          document.getElementById("comment-text").value = "";
+          fetchComments(); // refresh the comment list
+        } else {
+          msgEl.textContent = data.message || "Failed to post comment.";
+        }
+      } catch (err) {
+        msgEl.textContent = "Error: " + err.message;
+      }
+    }
+
+    // Initial data fetch
+    fetchEventDetails();
+    fetchComments();
+    </script>
+</body>
+</html>
