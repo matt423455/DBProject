@@ -1,5 +1,3 @@
-// scripts/script.js
-
 async function loginUser() {
     const username = document.getElementById("login-username").value.trim();
     const password = document.getElementById("login-password").value.trim();
@@ -19,25 +17,20 @@ async function loginUser() {
             body: JSON.stringify({ username, password })
         });
 
-        let text = await response.text();
-        console.log('Raw response:', text);
-        try {
-            let data = JSON.parse(text);
-            // Continue normally...
-        } catch (err) {
-            console.error('JSON parse error:', err);
-            alert('Error connecting to server (Invalid JSON).');
-            return;
-        }
-        if (data.success) {
-            msgEl.textContent = "Login successful! (User ID: " + data.user_id + ")";
-            // Optionally redirect or do something else, e.g.:
-            // window.location.href = "dashboard.html";
-        } else {
+        // Parse the JSON response from the server
+        let data = await response.json();
+
+        // If login fails, data.success will be false and data.message contains the error
+        if (!data.success) {
             msgEl.textContent = data.message || "Login failed.";
+        } else {
+            msgEl.textContent = "Login successful! (User ID: " + (data.user_id || "N/A") + ")";
+            // Optionally redirect, e.g.:
+            // window.location.href = "dashboard.html";
         }
     } catch (err) {
-        msgEl.textContent = "Error connecting to server.";
+        // In case of a network or JSON parsing error, display the error message
+        msgEl.textContent = "Error: " + err.message;
     }
 }
 
@@ -62,22 +55,14 @@ async function registerUser() {
             body: JSON.stringify({ username, email, password, university_id })
         });
 
-        let text = await response.text();
-        console.log('Raw response:', text);
-        try {
-            let data = JSON.parse(text);
-            // Continue normally...
-        } catch (err) {
-            console.error('JSON parse error:', err);
-            alert('Error connecting to server (Invalid JSON).');
-            return;
-        }
-        if (data.success) {
-            msgEl.textContent = "Registration successful! You can now log in.";
-        } else {
+        let data = await response.json();
+
+        if (!data.success) {
             msgEl.textContent = data.message || "Registration failed.";
+        } else {
+            msgEl.textContent = "Registration successful! You can now log in.";
         }
     } catch (err) {
-        msgEl.textContent = "Error connecting to server.";
+        msgEl.textContent = "Error: " + err.message;
     }
 }
