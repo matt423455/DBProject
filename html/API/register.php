@@ -1,6 +1,6 @@
 <?php
 // register.php
-require 'API/config.php';
+require 'config.php';
 
 // Expecting JSON POST data
 $inputData = json_decode(file_get_contents("php://input"), true);
