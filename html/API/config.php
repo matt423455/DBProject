@@ -5,7 +5,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 session_start();
 
-$DB_HOST = 'localhost';         // or '127.0.0.1'
+$DB_HOST = '127.0.0.1';         // or '127.0.0.1'
 $DB_NAME = 'college_events';    // the DB you created or already have
 $DB_USER = 'appuser';
 $DB_PASS = 'yourStrongPassword';
