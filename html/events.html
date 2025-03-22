@@ -21,7 +21,7 @@
     async function fetchEvents() {
       try {
         // Adjust the URL if your API folder name is different (e.g., "API/events.php")
-        let res = await fetch("API/events.php");
+        let res = await fetch("api/events.php");
         let data = await res.json();
         let container = document.getElementById("events-container");
         container.innerHTML = "";
