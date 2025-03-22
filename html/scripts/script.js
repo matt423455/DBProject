@@ -13,7 +13,7 @@ async function loginUser() {
     }
 
     try {
-        let response = await fetch("API/login.php", {
+        let response = await fetch("api/login.php", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password })
@@ -48,7 +48,7 @@ async function registerUser() {
     }
 
     try {
-        let response = await fetch("API/register.php", {
+        let response = await fetch("api/register.php", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, email, password, university_id })
