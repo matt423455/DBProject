@@ -1,4 +1,8 @@
-// config.php
+// config.
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 session_start();
 
 $DB_HOST = 'localhost';         // or '127.0.0.1'
