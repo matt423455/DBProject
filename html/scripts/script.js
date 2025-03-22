@@ -19,8 +19,16 @@ async function loginUser() {
             body: JSON.stringify({ username, password })
         });
 
-        let data = await response.json();
-
+        let text = await response.text();
+        console.log('Raw response:', text);
+        try {
+            let data = JSON.parse(text);
+            // Continue normally...
+        } catch (err) {
+            console.error('JSON parse error:', err);
+            alert('Error connecting to server (Invalid JSON).');
+            return;
+        }
         if (data.success) {
             msgEl.textContent = "Login successful! (User ID: " + data.user_id + ")";
             // Optionally redirect or do something else, e.g.:
@@ -54,8 +62,16 @@ async function registerUser() {
             body: JSON.stringify({ username, email, password, university_id })
         });
 
-        let data = await response.json();
-
+        let text = await response.text();
+        console.log('Raw response:', text);
+        try {
+            let data = JSON.parse(text);
+            // Continue normally...
+        } catch (err) {
+            console.error('JSON parse error:', err);
+            alert('Error connecting to server (Invalid JSON).');
+            return;
+        }
         if (data.success) {
             msgEl.textContent = "Registration successful! You can now log in.";
         } else {
