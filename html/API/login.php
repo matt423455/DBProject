@@ -1,53 +1,22 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+include 'config.php';
 
-session_start();
-require __DIR__ . 'config.php'; // Ensure correct path
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
 
-// Debug: turn on error reporting
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+    $sql = "SELECT password FROM users WHERE username=?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $stmt->store_result();
+    $stmt->bind_result($hashed_password);
+    $stmt->fetch();
 
-$inputData = json_decode(file_get_contents("php://input"), true);
-
-$username = trim($inputData['username'] ?? '');
-$password = trim($inputData['password'] ?? '');
-
-$response = [
-    'success' => false,
-    'message' => ''
-];
-
-if (!$username || !$password) {
-    $response['message'] = 'Username and password required.';
-    echo json_encode($response);
-    exit;
-}
-
-// Remove the try/catch for debugging
-$stmt = $conn->prepare("SELECT * FROM Users WHERE username = ? LIMIT 1");
-$stmt->bind_param("s", $username);
-$stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
-
-if ($user) {
-    // Verify hashed password
-    if (password_verify($password, $user['password'])) {
-        $_SESSION['user_id']  = $user['user_id'];
-        $_SESSION['role']     = $user['role'];
-        $_SESSION['username'] = $user['username'];
-
-        $response['success'] = true;
-        $response['message'] = 'Login successful.';
+    if (password_verify($password, $hashed_password)) {
+        echo "Login successful!";
     } else {
-        $response['message'] = 'Invalid credentials.';
+        echo "Invalid credentials.";
     }
-} else {
-    $response['message'] = 'No such user.';
 }
-
-echo json_encode($response);
+?>
