@@ -89,7 +89,7 @@
       }
 
       try {
-        let res = await fetch("api/comments.php", {
+        let res = await fetch("API/comments.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ event_id, comment_text: commentText })
