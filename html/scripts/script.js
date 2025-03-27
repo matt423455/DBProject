@@ -1,4 +1,6 @@
-async function loginUser() {
+async function loginUser(event) { 
+    event.preventDefault(); // prevents refreshing of message
+
     const username = document.getElementById("login-username").value.trim();
     const password = document.getElementById("login-password").value.trim();
     const msgEl = document.getElementById("login-message");
@@ -38,7 +40,9 @@ async function loginUser() {
     }
 }
 
-async function registerUser() {
+async function registerUser(event) {
+    event.preventDefault(); // prevents refreshing of message
+
     const username = document.getElementById("reg-username").value.trim();
     const email = document.getElementById("reg-email").value.trim();
     const password = document.getElementById("reg-password").value.trim();

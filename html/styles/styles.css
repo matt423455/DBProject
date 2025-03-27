@@ -1,0 +1,97 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #ccd8ae;
+    color: #333;
+    padding: 20px;
+}
+
+/* heading styles */
+h1 {
+    text-align: center;
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+hr {
+    margin: 20px 0;
+    border: 1px solid #ddd;
+}
+
+/* container housing login and register inputs */
+div {
+    max-width: 400px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.logon-container {
+    display: flex;               /* aligns items side by side */
+    justify-content: space-around; 
+    gap: 50px;                   /* Add some space between the two sections */
+    margin: 20px auto;           /* Center the form container */
+    max-width: 1200px;
+}
+
+form {
+    width: 45%; 
+    padding: 20px;               
+    border: 1px solid #ccc;
+    border-radius: 8px;          /* rounds corners on forms */
+    background-color: #f9f9f9;   
+}
+
+#login-message, #register-message {
+    color: rgb(169, 7, 7);
+    font-weight: bold;
+    font-size: 16px;
+    text-align: center;
+}
+
+/* input fields */
+input[type="text"], input[type="password"], input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+input[type="text"]:focus, input[type="password"]:focus, input[type="number"]:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+/* buttons */
+button {
+    background-color: #3561a9;   
+    color: white;                
+    padding: 10px 20px;          
+    border: none;             
+    border-radius: 4px;          
+    cursor: pointer;           
+    font-size: 16px;            
+    display: block;
+    margin: 20px auto;
+}
+
+button:hover {
+    background-color: #2b4d85;
+}
