@@ -3,50 +3,16 @@
 <head>
     <meta charset="utf-8">
     <title>Events Listing</title>
-    <style>
-        .event {
-            border: 1px solid #ccc;
-            margin: 10px;
-            padding: 10px;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="styles/events.css">
+    <script src="scripts/events-script.js"></script>
 </head>
 <body>
+
+    <div class="user-info">
+      <span id="user-greeting">Hello, username</span>
+    </div>
+
     <h1>Approved Events</h1>
     <div id="events-container">Loading events...</div>
-
-    <script>
-    // Fetch events from the API and populate the container
-    async function fetchEvents() {
-      try {
-        // Adjust the URL if your API folder name is different (e.g., "API/events.php")
-        let res = await fetch("API/event.php");
-        let data = await res.json();
-        let container = document.getElementById("events-container");
-        container.innerHTML = "";
-        if (data.success && data.data.length) {
-          data.data.forEach(event => {
-            // Create a clickable div for each event
-            let div = document.createElement("div");
-            div.classList.add("event");
-            div.innerHTML = `<h3>${event.name} (${event.event_category})</h3>
-                             <p>${event.description.substring(0, 100)}...</p>
-                             <p><strong>Date:</strong> ${event.event_date} at ${event.event_time}</p>`;
-            // When clicked, redirect to event_detail.html with the event_id in the query string
-            div.addEventListener("click", () => {
-              window.location.href = "event_detail.html?event_id=" + event.event_id;
-            });
-            container.appendChild(div);
-          });
-        } else {
-          container.innerHTML = "No events found.";
-        }
-      } catch (err) {
-        document.getElementById("events-container").innerHTML = "Error loading events: " + err.message;
-      }
-    }
-    fetchEvents();
-    </script>
 </body>
 </html>
