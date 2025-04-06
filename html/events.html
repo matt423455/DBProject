@@ -5,11 +5,31 @@
     <title>Events Listing</title>
     <link rel="stylesheet" href="styles/events.css">
     <script src="scripts/events-script.js"></script>
+    <style>
+        /* Inline styles for top-right links */
+        .top-right-links {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+            .top-right-links a {
+                margin-left: 10px;
+                color: #333;
+                text-decoration: none;
+                font-weight: bold;
+            }
+    </style>
 </head>
 <body>
 
     <div class="user-info">
-      <span id="user-greeting">Hello, username</span>
+        <span id="user-greeting">Hello, username</span>
+    </div>
+
+    <div class="top-right-links">
+        <a href="admin_panel.html">Admin Panel</a>
+        <a href="logout.php">Logout</a>
     </div>
 
     <h1>Approved Events</h1>
