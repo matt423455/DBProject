@@ -22,7 +22,7 @@ $username = $_SESSION['username'] ?? 'User';
           console.log("RSO data from API:", data);
           if (data.success && data.data.length) {
               // Only approved RSOs (is_active = 1)
-              const approved = data.data.filter(rso => rso.is_active == 1 || rso.is_active == 0);
+              const approved = data.data.filter(rso => rso.is_active == 1);
               console.log("Approved RSOs:", approved);
               container.innerHTML = '';
               if (approved.length > 0) {
@@ -78,46 +78,34 @@ $username = $_SESSION['username'] ?? 'User';
       }
   }
   
-  async function requestRSO(event) {
-      event.preventDefault();
-      const name = document.getElementById('req-rso-name').value.trim();
-      const description = document.getElementById('req-rso-description').value.trim();
-      const universityId = document.getElementById('req-university-id').value.trim();
-      const messageEl = document.getElementById('req-rso-message');
-      messageEl.textContent = '';
-      if (!name || !description || !universityId) {
-          messageEl.textContent = 'All fields are required.';
-          return;
-      }
-      try {
-          let res = await fetch('API/request_rso.php', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name, description, university_id: universityId })
-          });
-          let data = await res.json();
-          messageEl.textContent = data.message;
-          loadRSOs();
-      } catch (err) {
-          messageEl.textContent = 'Error: ' + err.message;
-      }
-  }
-  
   document.addEventListener('DOMContentLoaded', loadRSOs);
   </script>
+  <style>
+    /* Inline styles for top-right links */
+    .top-right-links {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+    .top-right-links a {
+        margin-left: 10px;
+        color: #333;
+        text-decoration: none;
+        font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-  <div class="user-info"><span>Hello, <?php echo htmlspecialchars($username); ?></span></div>
+  <!-- User info positioned at top left -->
+  <div class="user-info">
+      <span>Hello, <?php echo htmlspecialchars($username); ?></span>
+  </div>
+  <!-- Top right links -->
+  <div class="top-right-links">
+      <a href="request_rso_page.php">Request New RSO</a>
+      <a href="events.html">Back to Events</a>
+  </div>
   <h1>RSO Listings</h1>
   <div id="rso-list-container">Loading RSOs...</div>
-  <h2>Request New RSO</h2>
-  <form onsubmit="requestRSO(event)">
-      <input type="text" id="req-rso-name" placeholder="RSO Name" required><br>
-      <textarea id="req-rso-description" placeholder="Description" required></textarea><br>
-      <input type="number" id="req-university-id" placeholder="University ID" required><br>
-      <button type="submit">Request RSO</button>
-      <p id="req-rso-message"></p>
-  </form>
-  <a href="events.html">Back to Events</a>
 </body>
 </html>
