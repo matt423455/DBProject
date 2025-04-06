@@ -177,8 +177,9 @@ $username = isset($_SESSION['username']) ? $_SESSION['username'] : 'Guest';
   </div>
   <!-- Top right links -->
   <div class="top-right-links">
+       <a href="rso_user.php">Manage RSO</a>
       <button onclick="openModal()">Request New RSO</button>
-      <a href="events.html">Back to Events</a>
+      <a href="events.html">Events</a>
   </div>
   <h1>RSO Listings</h1>
   <div id="rso-list-container">Loading RSOs...</div>
