@@ -9,11 +9,18 @@ if (!isset($_SESSION['user_id'])) {
 
 require __DIR__ . '/config.php';
 
-// Read the raw input and log it for debugging.
+// Read the raw input.
 $rawInput = file_get_contents('php://input');
 error_log("Raw input in request_rso.php: " . $rawInput);
 
+// Try to decode JSON.
 $input = json_decode($rawInput, true);
+
+// If JSON decoding failed or returned null, try to use $_POST.
+if (!is_array($input) || empty($input)) {
+  error_log("JSON decoding failed; falling back to \$_POST.");
+  $input = $_POST;
+}
 error_log("Decoded input: " . var_export($input, true));
 
 // Trim and extract the fields.
