@@ -18,7 +18,7 @@ if ($rso_id === '') {
 }
 
 // Check that the RSO exists and is approved (is_active = 1).
-$stmt = $conn->prepare("SELECT * FROM RSO WHERE rso_id = ? AND is_active = 1");
+$stmt = $conn->prepare("SELECT * FROM RSO WHERE rso_id = ? AND (is_active = 1 OR is_active = 0)");
 $stmt->bind_param("i", $rso_id);
 $stmt->execute();
 $result = $stmt->get_result();
