@@ -5,6 +5,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'super_admin') {
     exit;
 }
 $user_role = $_SESSION['role'];
+$username  = $_SESSION['username'] ?? 'Super Admin';
 ?>
 <!DOCTYPE html>
 <html>
@@ -26,16 +27,35 @@ $user_role = $_SESSION['role'];
 </head>
 <body>
     <div class="container">
-        <a class="leave-admin" href="events.html">Leave Admin Panel</a>
+        <a class="leave-admin" href="events.php">Leave Admin Panel</a>
         <h1>Super Admin Panel</h1>
         
-        <!-- Only super admins can approve RSO requests -->
+        <!-- Update User Role Section (Super Admin Only) -->
+        <section id="user-management">
+            <h2>User Role Management</h2>
+            <form id="update-user-role-form">
+                <label for="user-id">User ID:</label>
+                <input type="number" id="user-id" name="user_id" required>
+                <br>
+                <label for="new-role">New Role:</label>
+                <select id="new-role" name="new_role" required>
+                    <option value="">Select Role</option>
+                    <option value="admin">Admin</option>
+                    <option value="super_admin">Super Admin</option>
+                </select>
+                <br>
+                <button type="submit">Update Role</button>
+            </form>
+            <p id="user-role-message"></p>
+        </section>
+
+        <!-- Approve RSO Requests Section (Super Admin Only) -->
         <section id="approve-rso">
             <h2>Approve RSO Requests</h2>
             <div id="pending-rso-container">Loading pending RSOs...</div>
         </section>
         
-        <!-- Other sections available to both admins and super admins -->
+        <!-- Delete Event Section (Admins & Super Admins) -->
         <section id="delete-event">
             <h2>Delete Event</h2>
             <form id="delete-event-form">
@@ -47,6 +67,7 @@ $user_role = $_SESSION['role'];
             <p id="event-message"></p>
         </section>
 
+        <!-- Manage RSO Membership Section (Admins & Super Admins) -->
         <section id="rso-membership">
             <h2>Manage RSO Membership</h2>
             <!-- Add User to RSO -->
@@ -73,54 +94,56 @@ $user_role = $_SESSION['role'];
             <p id="remove-rso-message"></p>
         </section>
 
+        <!-- List All RSOs Section (Admins & Super Admins) -->
         <section id="list-rsos">
             <h2>List of RSOs</h2>
             <div id="rso-list-container">Loading RSOs...</div>
         </section>
     </div>
+    <!-- Load pending RSOs (for the Approve RSO section) -->
     <script>
-    async function loadPendingRSOs() {
-        const container = document.getElementById('pending-rso-container');
-        container.textContent = 'Loading pending RSOs...';
-        try {
-            let res = await fetch('API/list_rso.php');
-            let data = await res.json();
-            if (data.success && data.data.length) {
-                // Filter pending RSOs (status == 2)
-                const pending = data.data.filter(rso => rso.status == 2);
-                container.innerHTML = '';
-                pending.forEach(rso => {
-                    const div = document.createElement('div');
-                    div.classList.add('event');
-                    div.innerHTML = `<h3 class="event-title">${rso.name}</h3>
-                                     <p class="event-description">${rso.description}</p>
-                                     <p><strong>University ID:</strong> ${rso.university_id}</p>
-                                     <p><strong>Requested By:</strong> ${rso.created_by}</p>
-                                     <button onclick="approveRSO(${rso.rso_id})">Approve</button>`;
-                    container.appendChild(div);
-                });
-            } else {
-                container.textContent = 'No pending RSOs.';
+        async function loadPendingRSOs() {
+            const container = document.getElementById('pending-rso-container');
+            container.textContent = 'Loading pending RSOs...';
+            try {
+                let res = await fetch('API/list_rso.php');
+                let data = await res.json();
+                if (data.success && data.data.length) {
+                    // Filter pending RSOs (status == 2)
+                    const pending = data.data.filter(rso => rso.status == 2);
+                    container.innerHTML = '';
+                    pending.forEach(rso => {
+                        const div = document.createElement('div');
+                        div.classList.add('event');
+                        div.innerHTML = `<h3 class="event-title">${rso.name}</h3>
+                                         <p class="event-description">${rso.description}</p>
+                                         <p><strong>University ID:</strong> ${rso.university_id}</p>
+                                         <p><strong>Requested By:</strong> ${rso.created_by}</p>
+                                         <button onclick="approveRSO(${rso.rso_id})">Approve</button>`;
+                        container.appendChild(div);
+                    });
+                } else {
+                    container.textContent = 'No pending RSOs.';
+                }
+            } catch (err) {
+                container.textContent = 'Error loading pending RSOs: ' + err.message;
             }
-        } catch (err) {
-            container.textContent = 'Error loading pending RSOs: ' + err.message;
         }
-    }
-    async function approveRSO(rso_id) {
-        try {
-            let res = await fetch('API/approve_rso.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ rso_id })
-            });
-            let data = await res.json();
-            alert(data.message);
-            loadPendingRSOs();
-        } catch (err) {
-            alert('Error: ' + err.message);
+        async function approveRSO(rso_id) {
+            try {
+                let res = await fetch('API/approve_rso.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rso_id })
+                });
+                let data = await res.json();
+                alert(data.message);
+                loadPendingRSOs();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
         }
-    }
-    document.addEventListener('DOMContentLoaded', loadPendingRSOs);
+        document.addEventListener('DOMContentLoaded', loadPendingRSOs);
     </script>
 </body>
 </html>
