@@ -2,6 +2,10 @@
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
+// Disable error display (for production)
+ini_set('display_errors', 0);
+error_reporting(0);
+
 if (!isset($_SESSION['user_id'])) {
   echo json_encode(['success' => false, 'message' => 'User not logged in.']);
   exit;
@@ -21,7 +25,7 @@ if (!is_array($input) || empty($input)) {
 }
 error_log("Decoded input: " . var_export($input, true));
 
-// Extract and trim fields.
+// Trim and extract the fields.
 $name = trim($input['name'] ?? '');
 $description = trim($input['description'] ?? '');
 $university_id = trim($input['university_id'] ?? '');
@@ -54,5 +58,4 @@ if ($stmt->affected_rows > 0) {
   echo json_encode(['success' => false, 'message' => 'Error submitting RSO request: ' . $conn->error]);
 }
 $stmt->close();
-?>
-``
+// Notice: No closing PHP tag to prevent accidental output.
