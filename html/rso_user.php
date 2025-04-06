@@ -22,7 +22,7 @@ $username = $_SESSION['username'] ?? 'User';
           console.log("RSO data from API:", data);
           if (data.success && data.data.length) {
               // Only approved RSOs (is_active = 1)
-              const approved = data.data.filter(rso => rso.is_active == 1);
+              const approved = data.data.filter(rso => rso.is_active == 1 || rso.is_active == 0);
               console.log("Approved RSOs:", approved);
               container.innerHTML = '';
               if (approved.length > 0) {
