@@ -184,35 +184,46 @@ if (empty($managedRSOs)) {
 async function createEvent(event) {
   event.preventDefault();
   const title = document.getElementById('event-title').value.trim();
+  const category = document.getElementById('event-category').value.trim();
   const details = document.getElementById('event-details').value.trim();
   const eventDate = document.getElementById('event-date').value.trim();
   const eventTime = document.getElementById('event-time').value.trim();
+  const locationId = document.getElementById('location-id').value.trim();
+  const contactPhone = document.getElementById('contact-phone').value.trim();
+  const contactEmail = document.getElementById('contact-email').value.trim();
+  const visibility = document.getElementById('event-visibility').value.trim();
   const messageEl = document.getElementById('event-msg');
   messageEl.textContent = '';
-  if (!title || !details || !eventDate || !eventTime) {
+  
+  // Check that all fields are provided
+  if (!title || !category || !details || !eventDate || !eventTime || !locationId || !contactPhone || !contactEmail || !visibility) {
     messageEl.textContent = 'All fields are required.';
     return;
   }
+  
   try {
     let res = await fetch('API/create_event.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        rso_id: currentRSO, // include the current RSO from the drop-down
-        name: title,       // note: using "name" for event title, matching the column name
-        event_category: "RSO", // if you want to hard-code for RSO events
+        rso_id: currentRSO,      // Automatically using current managed RSO
+        name: title,
+        event_category: category,
         description: details,
         event_date: eventDate,
         event_time: eventTime,
-        location_id: 1,  // you need to provide a valid location_id (adjust as needed)
-        contact_phone: 'N/A', // adjust as needed
-        contact_email: 'N/A', // adjust as needed
-        event_visibility: "RSO"
+        location_id: locationId,
+        contact_phone: contactPhone,
+        contact_email: contactEmail,
+        event_visibility: visibility
       })
     });
     let data = await res.json();
     messageEl.textContent = data.message;
-    document.getElementById('event-form').reset();
+    // Optionally, reset the form if successful
+    if (data.success) {
+      document.getElementById('event-form').reset();
+    }
   } catch (err) {
     messageEl.textContent = 'Error: ' + err.message;
   }
@@ -261,18 +272,26 @@ async function createEvent(event) {
   </div>
   
   <!-- Section for creating new events -->
-  <div class="section">
-      <h2>Create New Event</h2>
-      <form id="event-form" onsubmit="createEvent(event)">
-          <input type="text" id="event-title" placeholder="Event Title" required><br>
-          <textarea id="event-details" placeholder="Event Details" required></textarea><br>
-          <input type="date" id="event-date" required><br>
-          <input type="time" id="event-time" required><br>
-          <button type="submit">Create Event</button>
-          <p id="event-msg"></p>
-      </form>
-  </div>
-  
-  <a href="rso_user.php">Back to RSO Listings</a>
+<div class="section">
+  <h2>Create New Event</h2>
+  <form id="event-form" onsubmit="createEvent(event)">
+      <input type="text" id="event-title" placeholder="Event Title" required><br>
+      <input type="text" id="event-category" placeholder="Event Category" required><br>
+      <textarea id="event-details" placeholder="Event Details" required></textarea><br>
+      <input type="date" id="event-date" required><br>
+      <input type="time" id="event-time" required><br>
+      <input type="number" id="location-id" placeholder="Location ID" required><br>
+      <input type="text" id="contact-phone" placeholder="Contact Phone" required><br>
+      <input type="email" id="contact-email" placeholder="Contact Email" required><br>
+      <select id="event-visibility" required>
+          <option value="">Select Visibility</option>
+          <option value="public">Public</option>
+          <option value="private">Private</option>
+          <option value="RSO">RSO</option>
+      </select><br>
+      <button type="submit">Create Event</button>
+      <p id="event-msg"></p>
+  </form>
+</div>
 </body>
 </html>
