@@ -21,7 +21,7 @@ $username = $_SESSION['username'] ?? 'User';
           let data = await res.json();
           if (data.success && data.data.length) {
               // Only approved RSOs (status = 1)
-              const approved = data.data.filter(rso => rso.status == 1);
+              const approved = data.data.filter(rso => rso.is_active == 1);
               container.innerHTML = '';
               approved.forEach(rso => {
                   const div = document.createElement('div');
