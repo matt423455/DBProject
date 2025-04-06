@@ -23,29 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Create RSO form submission
-    const createRsoForm = document.getElementById('create-rso-form');
-    createRsoForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = document.getElementById('rso-name').value.trim();
-        const description = document.getElementById('rso-description').value.trim();
-        const universityId = document.getElementById('university-id').value.trim();
-        const messageEl = document.getElementById('rso-message');
-        messageEl.textContent = '';
-
-        try {
-            const res = await fetch('API/create_rso.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, description, university_id: universityId })
-            });
-            const data = await res.json();
-            messageEl.textContent = data.message;
-        } catch (err) {
-            messageEl.textContent = 'Error: ' + err.message;
-        }
-    });
-
     // Delete event form submission
     const deleteEventForm = document.getElementById('delete-event-form');
     deleteEventForm.addEventListener('submit', async (e) => {
