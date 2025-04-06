@@ -15,15 +15,13 @@ error_log("Raw input in request_rso.php: " . $rawInput);
 
 // Try to decode JSON.
 $input = json_decode($rawInput, true);
-
-// If JSON decoding failed or returned null, try to use $_POST.
 if (!is_array($input) || empty($input)) {
   error_log("JSON decoding failed; falling back to \$_POST.");
   $input = $_POST;
 }
 error_log("Decoded input: " . var_export($input, true));
 
-// Trim and extract the fields.
+// Extract and trim fields.
 $name = trim($input['name'] ?? '');
 $description = trim($input['description'] ?? '');
 $university_id = trim($input['university_id'] ?? '');
@@ -45,10 +43,10 @@ if ($result->num_rows > 0) {
 $stmt->close();
 
 $created_by = $_SESSION['user_id'];
-$status = 2; // Pending
+$is_active = 2; // Pending
 
-$stmt = $conn->prepare("INSERT INTO RSO (name, description, university_id, created_by, is_active, status) VALUES (?, ?, ?, ?, 1, ?)");
-$stmt->bind_param("ssiii", $name, $description, $university_id, $created_by, $status);
+$stmt = $conn->prepare("INSERT INTO RSO (name, description, university_id, created_by, is_active) VALUES (?, ?, ?, ?, ?)");
+$stmt->bind_param("ssiii", $name, $description, $university_id, $created_by, $is_active);
 $stmt->execute();
 if ($stmt->affected_rows > 0) {
   echo json_encode(['success' => true, 'message' => 'RSO request submitted successfully.']);
@@ -57,3 +55,4 @@ if ($stmt->affected_rows > 0) {
 }
 $stmt->close();
 ?>
+``

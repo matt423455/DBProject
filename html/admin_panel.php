@@ -110,7 +110,7 @@ $username  = $_SESSION['username'] ?? 'Super Admin';
                 let data = await res.json();
                 if (data.success && data.data.length) {
                     // Filter pending RSOs (status == 2)
-                    const pending = data.data.filter(rso => rso.status == 2);
+                    const pending = data.data.filter(rso => rso.is_active == 2);
                     container.innerHTML = '';
                     pending.forEach(rso => {
                         const div = document.createElement('div');
