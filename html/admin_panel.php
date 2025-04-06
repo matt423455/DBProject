@@ -27,7 +27,7 @@ $username  = $_SESSION['username'] ?? 'Super Admin';
 </head>
 <body>
     <div class="container">
-        <a class="leave-admin" href="events.php">Leave Admin Panel</a>
+        <a class="leave-admin" href="events.html">Leave Admin Panel</a>
         <h1>Super Admin Panel</h1>
         
         <!-- Update User Role Section (Super Admin Only) -->
