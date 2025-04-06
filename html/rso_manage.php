@@ -179,6 +179,9 @@ async function promoteMember(memberId) {
 
 async function createEvent(event) {
   event.preventDefault();
+  console.log("createEvent triggered");
+  
+  // Get field values
   const title = document.getElementById('event-title').value.trim();
   const category = document.getElementById('event-category').value.trim();
   const details = document.getElementById('event-details').value.trim();
@@ -191,6 +194,18 @@ async function createEvent(event) {
   const messageEl = document.getElementById('event-msg');
   messageEl.textContent = '';
   
+  // Debug log all field values
+  console.log("Title:", title);
+  console.log("Category:", category);
+  console.log("Details:", details);
+  console.log("Date:", eventDate);
+  console.log("Time:", eventTime);
+  console.log("Location ID:", locationId);
+  console.log("Contact Phone:", contactPhone);
+  console.log("Contact Email:", contactEmail);
+  console.log("Visibility:", visibility);
+  
+  // Validate fields
   if (!title || !category || !details || !eventDate || !eventTime || !locationId || !contactPhone || !contactEmail || !visibility) {
     messageEl.textContent = 'All fields are required.';
     return;
@@ -201,7 +216,7 @@ async function createEvent(event) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        rso_id: currentRSO,
+        rso_id: currentRSO,      // currentRSO should be set via the drop-down elsewhere in your code
         name: title,
         event_category: category,
         description: details,
@@ -213,12 +228,15 @@ async function createEvent(event) {
         event_visibility: visibility
       })
     });
+    console.log("Response status:", res.status);
     let data = await res.json();
+    console.log("Response JSON:", data);
     messageEl.textContent = data.message;
     if (data.success) {
       document.getElementById('event-form').reset();
     }
   } catch (err) {
+    console.error("Error in createEvent:", err);
     messageEl.textContent = 'Error: ' + err.message;
   }
 }
@@ -288,5 +306,6 @@ document.addEventListener('DOMContentLoaded', () => {
       <p id="event-msg"></p>
   </form>
 </div>
+
 </body>
 </html>
