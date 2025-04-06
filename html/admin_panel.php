@@ -54,6 +54,11 @@ $username  = $_SESSION['username'] ?? 'Super Admin';
             <h2>Approve RSO Requests</h2>
             <div id="pending-rso-container">Loading pending RSOs...</div>
         </section>
+
+        <section id="pending-events">
+            <h2>Pending Events</h2>
+            <div id="pending-events-container">Loading pending events...</div>
+        </section>
         
         <!-- Delete Event Section (Admins & Super Admins) -->
         <section id="delete-event">
@@ -129,6 +134,56 @@ $username  = $_SESSION['username'] ?? 'Super Admin';
                 container.textContent = 'Error loading pending RSOs: ' + err.message;
             }
         }
+
+          async function loadPendingEvents() {
+    const container = document.getElementById('pending-events-container');
+    container.textContent = 'Loading pending events...';
+    try {
+      let res = await fetch('API/list_event.php');
+      let data = await res.json();
+      if (data.success && data.data.length) {
+        // Filter pending events (approved == 0)
+        const pending = data.data.filter(event => event.approved == 0);
+        container.innerHTML = '';
+        if (pending.length > 0) {
+          pending.forEach(event => {
+            const div = document.createElement('div');
+            div.classList.add('event');
+            div.innerHTML = `<h3 class="event-title">${event.name}</h3>
+                             <p class="event-description">${event.description}</p>
+                             <p><strong>Category:</strong> ${event.event_category}</p>
+                             <p><strong>Date:</strong> ${event.event_date} at ${event.event_time}</p>
+                             <p><strong>Visibility:</strong> ${event.event_visibility}</p>
+                             <button onclick="approveEvent(${event.event_id})">Approve</button>`;
+            container.appendChild(div);
+          });
+        } else {
+          container.textContent = 'No pending events found.';
+        }
+      } else {
+        container.textContent = 'No events found.';
+      }
+    } catch (err) {
+      container.textContent = 'Error loading events: ' + err.message;
+    }
+  }
+  
+  async function approveEvent(event_id) {
+    try {
+      let res = await fetch('API/approve_event.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event_id })
+      });
+      let data = await res.json();
+      alert(data.message);
+      loadPendingEvents();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+  
+  document.addEventListener('DOMContentLoaded', loadPendingEvents);
         async function approveRSO(rso_id) {
             try {
                 let res = await fetch('API/approve_rso.php', {
