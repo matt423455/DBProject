@@ -195,7 +195,6 @@ async function createEvent(event) {
   const messageEl = document.getElementById('event-msg');
   messageEl.textContent = '';
   
-  // Check that all fields are provided
   if (!title || !category || !details || !eventDate || !eventTime || !locationId || !contactPhone || !contactEmail || !visibility) {
     messageEl.textContent = 'All fields are required.';
     return;
@@ -206,7 +205,7 @@ async function createEvent(event) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        rso_id: currentRSO,      // Automatically using current managed RSO
+        rso_id: currentRSO,      // from the drop-down
         name: title,
         event_category: category,
         description: details,
@@ -220,13 +219,14 @@ async function createEvent(event) {
     });
     let data = await res.json();
     messageEl.textContent = data.message;
-    // Optionally, reset the form if successful
     if (data.success) {
       document.getElementById('event-form').reset();
     }
   } catch (err) {
     messageEl.textContent = 'Error: ' + err.message;
   }
+}
+
 }
     
     function changeManagedRSO(selectObj) {
