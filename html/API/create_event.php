@@ -40,7 +40,7 @@ $created_by = $_SESSION['user_id'];
 $approved   = 0; // New events are pending approval
 
 $stmt = $conn->prepare("INSERT INTO Event (name, event_category, description, event_date, event_time, location_id, contact_phone, contact_email, event_visibility, rso_id, created_by, approved) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("sssssiissiii", $name, $event_category, $description, $event_date, $event_time, $location_id, $contact_phone, $contact_email, $event_visibility, $rso_id, $created_by, $approved);
+$stmt->bind_param("sssssisssiii", $name, $event_category, $description, $event_date, $event_time, $location_id, $contact_phone, $contact_email, $event_visibility, $rso_id, $created_by, $approved);
 $stmt->execute();
 
 if ($stmt->affected_rows > 0) {
