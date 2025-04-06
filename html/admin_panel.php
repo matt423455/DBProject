@@ -26,7 +26,7 @@ $user_role = $_SESSION['role'];
 </head>
 <body>
     <div class="container">
-        <a class="leave-admin" href="API/events.php">Leave Admin Panel</a>
+        <a class="leave-admin" href="events.html">Leave Admin Panel</a>
         <h1>Admin Panel</h1>
         
         <?php if($user_role === 'super_admin'): ?>
