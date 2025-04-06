@@ -181,38 +181,42 @@ if (empty($managedRSOs)) {
       }
     }
     
-    async function createEvent(event) {
-      event.preventDefault();
-      const title = document.getElementById('event-title').value.trim();
-      const details = document.getElementById('event-details').value.trim();
-      const eventDate = document.getElementById('event-date').value.trim();
-      const eventTime = document.getElementById('event-time').value.trim();
-      const messageEl = document.getElementById('event-msg');
-      messageEl.textContent = '';
-      if (!title || !details || !eventDate || !eventTime) {
-        messageEl.textContent = 'All fields are required.';
-        return;
-      }
-      try {
-        let res = await fetch('API/create_event.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            rso_id: currentRSO,
-            title: title,
-            details: details,
-            event_date: eventDate,
-            event_time: eventTime
-          })
-        });
-        let data = await res.json();
-        messageEl.textContent = data.message;
-        // Optionally clear the form
-        document.getElementById('event-form').reset();
-      } catch (err) {
-        messageEl.textContent = 'Error: ' + err.message;
-      }
-    }
+async function createEvent(event) {
+  event.preventDefault();
+  const title = document.getElementById('event-title').value.trim();
+  const details = document.getElementById('event-details').value.trim();
+  const eventDate = document.getElementById('event-date').value.trim();
+  const eventTime = document.getElementById('event-time').value.trim();
+  const messageEl = document.getElementById('event-msg');
+  messageEl.textContent = '';
+  if (!title || !details || !eventDate || !eventTime) {
+    messageEl.textContent = 'All fields are required.';
+    return;
+  }
+  try {
+    let res = await fetch('API/create_event.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        rso_id: currentRSO, // include the current RSO from the drop-down
+        name: title,       // note: using "name" for event title, matching the column name
+        event_category: "RSO", // if you want to hard-code for RSO events
+        description: details,
+        event_date: eventDate,
+        event_time: eventTime,
+        location_id: 1,  // you need to provide a valid location_id (adjust as needed)
+        contact_phone: 'N/A', // adjust as needed
+        contact_email: 'N/A', // adjust as needed
+        event_visibility: "RSO"
+      })
+    });
+    let data = await res.json();
+    messageEl.textContent = data.message;
+    document.getElementById('event-form').reset();
+  } catch (err) {
+    messageEl.textContent = 'Error: ' + err.message;
+  }
+}
     
     function changeManagedRSO(selectObj) {
       currentRSO = selectObj.value;

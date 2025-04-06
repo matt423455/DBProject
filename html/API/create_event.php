@@ -16,14 +16,21 @@ $details    = trim($input['details'] ?? '');
 $event_date = trim($input['event_date'] ?? '');
 $event_time = trim($input['event_time'] ?? '');
 
-if ($rso_id === '' || $title === '' || $details === '' || $event_date === '' || $event_time === '') {
-  echo json_encode(['success' => false, 'message' => 'All event fields are required.']);
-  exit;
+if ($name === '' || $event_category === '' || $event_date === '' || $event_time === '' ||
+    $location_id === '' || $contact_phone === '' || $contact_email === '' || $event_visibility === '') {
+    echo json_encode(['success' => false, 'message' => 'All event fields are required.']);
+    exit;
+}
+
+$rso_id = trim($input['rso_id'] ?? '');  
+if ($event_visibility === 'RSO' && $rso_id === '') {
+    echo json_encode(['success' => false, 'message' => 'RSO ID is required for RSO events.']);
+    exit;
 }
 
 $created_by = $_SESSION['user_id'];
-$stmt = $conn->prepare("INSERT INTO Event (rso_id, title, details, event_date, event_time, created_by) VALUES (?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("issssi", $rso_id, $title, $details, $event_date, $event_time, $created_by);
+$stmt = $conn->prepare("INSERT INTO Event (name, event_category, description, event_date, event_time, location_id, contact_phone, contact_email, event_visibility, rso_id, created_by, approved) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+$stmt->bind_param("sssssiissiii", $name, $event_category, $description, $event_date, $event_time, $location_id, $contact_phone, $contact_email, $event_visibility, $rso_id, $created_by, $approved);
 $stmt->execute();
 if ($stmt->affected_rows > 0) {
   echo json_encode(['success' => true, 'message' => 'Event created successfully.']);
