@@ -89,98 +89,94 @@ if (empty($managedRSOs)) {
     }
   </style>
   <script>
-    // Global variable to hold the current managed RSO id.
-    let currentRSO = <?php echo json_encode($managedRSOs[0]['rso_id']); ?>;
-    // Also store the user role in the RSO (leader/officer) for the current RSO.
-    // For simplicity, we assume if user is leader in any RSO, they have leader privileges.
-    // Otherwise, they are an officer.
-    let userPrivilege = 'officer'; 
-    <?php
-      // Check if the user is leader in any of the managed RSOs.
-      $isLeader = false;
-      foreach ($managedRSOs as $rso) {
-          // You might need an additional query here to check the user's role for each RSO.
-          // For this example, we assume that if the RSO name contains "Leader", then they are leader.
-          // (Replace with your proper logic.)
-          if (stripos($rso['name'], 'leader') !== false) {
-              $isLeader = true;
-              break;
-          }
+// Global variable to hold the current managed RSO id.
+let currentRSO = <?php echo json_encode($managedRSOs[0]['rso_id']); ?>;
+// Also store the user role in the RSO (leader/officer) for the current RSO.
+// For simplicity, we assume if user is leader in any RSO, they have leader privileges.
+// Otherwise, they are an officer.
+let userPrivilege = 'officer'; 
+<?php
+  $isLeader = false;
+  foreach ($managedRSOs as $rso) {
+      if (stripos($rso['name'], 'leader') !== false) {
+          $isLeader = true;
+          break;
       }
-      echo "userPrivilege = " . ($isLeader ? "'leader'" : "'officer'") . ";";
-    ?>
-    
-    async function loadMembers() {
-      const container = document.getElementById('members-container');
-      container.textContent = 'Loading members...';
-      try {
-        let res = await fetch('API/rso_get_members.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rso_id: currentRSO })
+  }
+  echo "userPrivilege = " . ($isLeader ? "'leader'" : "'officer'") . ";";
+?>
+
+async function loadMembers() {
+  const container = document.getElementById('members-container');
+  container.textContent = 'Loading members...';
+  try {
+    let res = await fetch('API/rso_get_members.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rso_id: currentRSO })
+    });
+    let data = await res.json();
+    if (data.success) {
+      container.innerHTML = '';
+      if (data.members && data.members.length > 0) {
+        let table = document.createElement('table');
+        let header = document.createElement('tr');
+        header.innerHTML = '<th>User ID</th><th>Username</th><th>Role</th><th>Actions</th>';
+        table.appendChild(header);
+        data.members.forEach(member => {
+          let row = document.createElement('tr');
+          row.innerHTML = `<td>${member.user_id}</td>
+                           <td>${member.username}</td>
+                           <td>${member.role}</td>
+                           <td>
+                              <button onclick="removeMember(${member.user_id})">Remove</button>
+                              ${ userPrivilege === 'leader' ? `<button onclick="promoteMember(${member.user_id})">Promote to Officer</button>` : '' }
+                           </td>`;
+          table.appendChild(row);
         });
-        let data = await res.json();
-        if (data.success) {
-          container.innerHTML = '';
-          if (data.members && data.members.length > 0) {
-            let table = document.createElement('table');
-            let header = document.createElement('tr');
-            header.innerHTML = '<th>User ID</th><th>Username</th><th>Role</th><th>Actions</th>';
-            table.appendChild(header);
-            data.members.forEach(member => {
-              let row = document.createElement('tr');
-              row.innerHTML = `<td>${member.user_id}</td>
-                               <td>${member.username}</td>
-                               <td>${member.role}</td>
-                               <td>
-                                  <button onclick="removeMember(${member.user_id})">Remove</button>
-                                  ${ userPrivilege === 'leader' ? `<button onclick="promoteMember(${member.user_id})">Promote to Officer</button>` : '' }
-                               </td>`;
-              table.appendChild(row);
-            });
-            container.appendChild(table);
-          } else {
-            container.textContent = 'No members found.';
-          }
-        } else {
-          container.textContent = data.message;
-        }
-      } catch (err) {
-        container.textContent = 'Error loading members: ' + err.message;
+        container.appendChild(table);
+      } else {
+        container.textContent = 'No members found.';
       }
+    } else {
+      container.textContent = data.message;
     }
-    
-    async function removeMember(memberId) {
-      if (!confirm("Are you sure you want to remove this member?")) return;
-      try {
-        let res = await fetch('API/rso_remove_member.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rso_id: currentRSO, user_id: memberId })
-        });
-        let data = await res.json();
-        alert(data.message);
-        loadMembers();
-      } catch (err) {
-        alert('Error: ' + err.message);
-      }
-    }
-    
-    async function promoteMember(memberId) {
-      try {
-        let res = await fetch('API/rso_promote_member.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rso_id: currentRSO, user_id: memberId })
-        });
-        let data = await res.json();
-        alert(data.message);
-        loadMembers();
-      } catch (err) {
-        alert('Error: ' + err.message);
-      }
-    }
-    
+  } catch (err) {
+    container.textContent = 'Error loading members: ' + err.message;
+  }
+}
+
+async function removeMember(memberId) {
+  if (!confirm("Are you sure you want to remove this member?")) return;
+  try {
+    let res = await fetch('API/rso_remove_member.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rso_id: currentRSO, user_id: memberId })
+    });
+    let data = await res.json();
+    alert(data.message);
+    loadMembers();
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
+async function promoteMember(memberId) {
+  try {
+    let res = await fetch('API/rso_promote_member.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rso_id: currentRSO, user_id: memberId })
+    });
+    let data = await res.json();
+    alert(data.message);
+    loadMembers();
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
 async function createEvent(event) {
   event.preventDefault();
   const title = document.getElementById('event-title').value.trim();
@@ -205,7 +201,7 @@ async function createEvent(event) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        rso_id: currentRSO,      // from the drop-down
+        rso_id: currentRSO,
         name: title,
         event_category: category,
         description: details,
@@ -227,16 +223,15 @@ async function createEvent(event) {
   }
 }
 
+function changeManagedRSO(selectObj) {
+  currentRSO = selectObj.value;
+  loadMembers();
 }
-    
-    function changeManagedRSO(selectObj) {
-      currentRSO = selectObj.value;
-      loadMembers();
-    }
-    
-    document.addEventListener('DOMContentLoaded', () => {
-      loadMembers();
-    });
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadMembers();
+});
+
   </script>
 </head>
 <body>
