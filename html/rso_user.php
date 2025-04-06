@@ -72,30 +72,31 @@ $username = $_SESSION['username'] ?? 'User';
       }
   }
   
-  async function requestRSO(event) {
-      event.preventDefault();
-      const name = document.getElementById('req-rso-name').value.trim();
-      const description = document.getElementById('req-rso-description').value.trim();
-      const universityId = document.getElementById('req-university-id').value.trim();
-      const messageEl = document.getElementById('req-rso-message');
-      messageEl.textContent = '';
-      if (!name || !description || !universityId) {
-          messageEl.textContent = 'All fields are required.';
-          return;
-      }
-      try {
-          let res = await fetch('API/request_rso.php', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name, description, university_id: universityId })
-          });
-          let data = await res.json();
-          messageEl.textContent = data.message;
-          loadRSOs();
-      } catch (err) {
-          messageEl.textContent = 'Error: ' + err.message;
-      }
-  }
+async function requestRSO(event) {
+    event.preventDefault();
+    const name = document.getElementById('req-rso-name').value.trim();
+    const description = document.getElementById('req-rso-description').value.trim();
+    const universityId = document.getElementById('req-university-id').value.trim();
+    const messageEl = document.getElementById('req-rso-message');
+    messageEl.textContent = '';
+    if (!name || !description || !universityId) {
+        messageEl.textContent = 'All fields are required.';
+        return;
+    }
+    try {
+        let res = await fetch('API/request_rso.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, description, university_id: universityId })
+        });
+        let data = await res.json();
+        messageEl.textContent = data.message;
+        loadRSOs();
+    } catch (err) {
+        messageEl.textContent = 'Error: ' + err.message;
+    }
+}
+
   
   document.addEventListener('DOMContentLoaded', loadRSOs);
   </script>
@@ -112,6 +113,6 @@ $username = $_SESSION['username'] ?? 'User';
       <button type="submit">Request RSO</button>
       <p id="req-rso-message"></p>
   </form>
-  <a href="events.php">Back to Events</a>
+  <a href="events.html">Back to Events</a>
 </body>
 </html>
