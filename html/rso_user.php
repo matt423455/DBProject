@@ -19,21 +19,27 @@ $username = $_SESSION['username'] ?? 'User';
       try {
           let res = await fetch('API/list_rso.php');
           let data = await res.json();
+          console.log("RSO data from API:", data);
           if (data.success && data.data.length) {
-              // Only approved RSOs (status = 1)
+              // Only approved RSOs (is_active = 1)
               const approved = data.data.filter(rso => rso.is_active == 1);
+              console.log("Approved RSOs:", approved);
               container.innerHTML = '';
-              approved.forEach(rso => {
-                  const div = document.createElement('div');
-                  div.classList.add('event');
-                  div.innerHTML = `<h3 class="event-title">${rso.name}</h3>
-                                    <p class="event-description">${rso.description}</p>
-                                    <p><strong>University ID:</strong> ${rso.university_id}</p>
-                                    <p><strong>Created By:</strong> ${rso.created_by}</p>
-                                    <button onclick="joinRSO(${rso.rso_id})">Join RSO</button>
-                                    <button onclick="leaveRSO(${rso.rso_id})">Leave RSO</button>`;
-                  container.appendChild(div);
-              });
+              if (approved.length > 0) {
+                  approved.forEach(rso => {
+                      const div = document.createElement('div');
+                      div.classList.add('event');
+                      div.innerHTML = `<h3 class="event-title">${rso.name}</h3>
+                                        <p class="event-description">${rso.description}</p>
+                                        <p><strong>University ID:</strong> ${rso.university_id}</p>
+                                        <p><strong>Created By:</strong> ${rso.created_by}</p>
+                                        <button onclick="joinRSO(${rso.rso_id})">Join RSO</button>
+                                        <button onclick="leaveRSO(${rso.rso_id})">Leave RSO</button>`;
+                      container.appendChild(div);
+                  });
+              } else {
+                  container.textContent = 'No approved RSOs found.';
+              }
           } else {
               container.textContent = 'No RSOs found.';
           }
@@ -72,31 +78,30 @@ $username = $_SESSION['username'] ?? 'User';
       }
   }
   
-async function requestRSO(event) {
-    event.preventDefault();
-    const name = document.getElementById('req-rso-name').value.trim();
-    const description = document.getElementById('req-rso-description').value.trim();
-    const universityId = document.getElementById('req-university-id').value.trim();
-    const messageEl = document.getElementById('req-rso-message');
-    messageEl.textContent = '';
-    if (!name || !description || !universityId) {
-        messageEl.textContent = 'All fields are required.';
-        return;
-    }
-    try {
-        let res = await fetch('API/request_rso.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, description, university_id: universityId })
-        });
-        let data = await res.json();
-        messageEl.textContent = data.message;
-        loadRSOs();
-    } catch (err) {
-        messageEl.textContent = 'Error: ' + err.message;
-    }
-}
-
+  async function requestRSO(event) {
+      event.preventDefault();
+      const name = document.getElementById('req-rso-name').value.trim();
+      const description = document.getElementById('req-rso-description').value.trim();
+      const universityId = document.getElementById('req-university-id').value.trim();
+      const messageEl = document.getElementById('req-rso-message');
+      messageEl.textContent = '';
+      if (!name || !description || !universityId) {
+          messageEl.textContent = 'All fields are required.';
+          return;
+      }
+      try {
+          let res = await fetch('API/request_rso.php', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name, description, university_id: universityId })
+          });
+          let data = await res.json();
+          messageEl.textContent = data.message;
+          loadRSOs();
+      } catch (err) {
+          messageEl.textContent = 'Error: ' + err.message;
+      }
+  }
   
   document.addEventListener('DOMContentLoaded', loadRSOs);
   </script>
