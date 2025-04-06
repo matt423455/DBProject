@@ -4,7 +4,8 @@ if (!isset($_SESSION['user_id'])) {
   header("Location: index.html");
   exit;
 }
-$username = $_SESSION['username'] ?? 'User';
+// Use the username from the session; if not set, default to 'Guest'
+$username = isset($_SESSION['username']) ? $_SESSION['username'] : 'Guest';
 ?>
 <!DOCTYPE html>
 <html>
@@ -12,6 +13,57 @@ $username = $_SESSION['username'] ?? 'User';
   <meta charset="utf-8">
   <title>RSO Listings</title>
   <link rel="stylesheet" href="styles/events.css">
+  <style>
+    /* Top left user info is already styled in events.css (.user-info) */
+    /* Top right links styling */
+    .top-right-links {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+    .top-right-links a,
+    .top-right-links button {
+        margin-left: 10px;
+        color: #333;
+        text-decoration: none;
+        font-weight: bold;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    /* Modal styles */
+    .modal {
+      display: none; /* Hidden by default */
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 500px;
+      text-align: left;
+      position: relative;
+    }
+    .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+    }
+  </style>
   <script>
   async function loadRSOs() {
       const container = document.getElementById('rso-list-container');
@@ -78,34 +130,72 @@ $username = $_SESSION['username'] ?? 'User';
       }
   }
   
+  async function submitRSORequest(event) {
+      event.preventDefault();
+      const name = document.getElementById('modal-rso-name').value.trim();
+      const description = document.getElementById('modal-rso-description').value.trim();
+      const universityId = document.getElementById('modal-university-id').value.trim();
+      const messageEl = document.getElementById('modal-req-message');
+      messageEl.textContent = '';
+      if (!name || !description || !universityId) {
+          messageEl.textContent = 'All fields are required.';
+          return;
+      }
+      try {
+          let res = await fetch('API/request_rso.php', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name, description, university_id: universityId })
+          });
+          let data = await res.json();
+          messageEl.textContent = data.message;
+          loadRSOs();
+          // If successful, close the modal after a short delay.
+          if(data.success) {
+            setTimeout(closeModal, 1500);
+          }
+      } catch (err) {
+          messageEl.textContent = 'Error: ' + err.message;
+      }
+  }
+  
+  function openModal() {
+      document.getElementById('request-modal').style.display = 'block';
+  }
+  
+  function closeModal() {
+      document.getElementById('request-modal').style.display = 'none';
+  }
+  
   document.addEventListener('DOMContentLoaded', loadRSOs);
   </script>
-  <style>
-    /* Inline styles for top-right links */
-    .top-right-links {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-    }
-    .top-right-links a {
-        margin-left: 10px;
-        color: #333;
-        text-decoration: none;
-        font-weight: bold;
-    }
-  </style>
 </head>
 <body>
-  <!-- User info positioned at top left -->
+  <!-- Top left user info -->
   <div class="user-info">
       <span>Hello, <?php echo htmlspecialchars($username); ?></span>
   </div>
   <!-- Top right links -->
   <div class="top-right-links">
-      <a href="request_rso_page.php">Request New RSO</a>
+      <button onclick="openModal()">Request New RSO</button>
       <a href="events.html">Back to Events</a>
   </div>
   <h1>RSO Listings</h1>
   <div id="rso-list-container">Loading RSOs...</div>
+  
+  <!-- Modal for Request New RSO -->
+  <div id="request-modal" class="modal">
+      <div class="modal-content">
+          <span class="close-modal" onclick="closeModal()">&times;</span>
+          <h2>Request New RSO</h2>
+          <form onsubmit="submitRSORequest(event)">
+              <input type="text" id="modal-rso-name" placeholder="RSO Name" required><br>
+              <textarea id="modal-rso-description" placeholder="Description" required></textarea><br>
+              <input type="number" id="modal-university-id" placeholder="University ID" required><br>
+              <button type="submit">Submit Request</button>
+              <p id="modal-req-message"></p>
+          </form>
+      </div>
+  </div>
 </body>
 </html>

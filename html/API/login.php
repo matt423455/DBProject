@@ -45,6 +45,7 @@ if (!password_verify($password, $user['password'])) {
 }
 
 // If correct, store session data
+$_SESSION['username']      = $user['username'];
 $_SESSION['user_id']       = $user['user_id'];
 $_SESSION['role']          = $user['role'];
 $_SESSION['university_id'] = $user['university_id'];
