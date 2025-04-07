@@ -4,8 +4,30 @@
     <meta charset="utf-8">
     <title>Event Details</title>
     <link rel="stylesheet" href="styles/event_detail.css">
+
+    <style>
+      .top-right-links {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+      }
+      .top-right-links a {
+          margin-left: 10px;
+          color: #333;
+          text-decoration: none;
+          font-weight: bold;
+      }
+      </style>
+      
 </head>
 <body>
+  <div class="top-right-links">
+    <a href="admin_panel.php">Admin Panel</a>
+    <a href="rso_user.php">RSOs</a>
+    <a href="comments.html">Comments</a>
+    <a href="/API/logout.php">Logout</a>
+</div>
+
     <h1 id="event-name">Event Details</h1>
     <div id="event-details">Loading event details...</div>
 
