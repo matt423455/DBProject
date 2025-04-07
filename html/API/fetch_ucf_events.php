@@ -68,11 +68,10 @@ foreach ($xml->event as $event) {
     
     // Set additional fields (if needed, add more from the XML such as room or virtual_url)
     $created_by = "";
-    $university_id = 2; // UCF university id
 
     // Prepare and execute insert into the events table.
-    $sql = "INSERT INTO Event (name, description, event_date, event_time, event_category, location, contact_email, created_by, university_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO Event (name, description, event_date, event_time, event_category, location, contact_email, created_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         echo json_encode([
@@ -81,7 +80,7 @@ foreach ($xml->event as $event) {
         ]);
         exit;
     }
-    $stmt->bind_param("ssssssssi", $name, $description, $date, $time, $category, $location, $contact_email, $created_by, $university_id);
+    $stmt->bind_param("ssssssssi", $name, $description, $date, $time, $category, $location, $contact_email, $created_by);
     
     if ($stmt->execute()) {
         $inserted++;
