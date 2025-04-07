@@ -17,7 +17,7 @@ $event_category   = trim($input['event_category'] ?? '');
 $description      = trim($input['description'] ?? '');
 $event_date       = trim($input['event_date'] ?? '');
 $event_time       = trim($input['event_time'] ?? '');
-$location_id      = trim($input['location_id'] ?? '');
+$location      = trim($input['location'] ?? '');
 $contact_phone    = trim($input['contact_phone'] ?? '');
 $contact_email    = trim($input['contact_email'] ?? '');
 $event_visibility = trim($input['event_visibility'] ?? '');
@@ -25,7 +25,7 @@ $rso_id           = trim($input['rso_id'] ?? '');
 
 // Check that all required fields are provided.
 if ($name === '' || $event_category === '' || $description === '' || $event_date === '' ||
-    $event_time === '' || $location_id === '' || $contact_phone === '' || $contact_email === '' ||
+    $event_time === '' || $location === '' || $contact_phone === '' || $contact_email === '' ||
     $event_visibility === '') {
     echo json_encode(['success' => false, 'message' => 'All event fields are required.']);
     exit;
@@ -41,8 +41,8 @@ $created_by = $_SESSION['user_id'];
 $approved   = 0; // New events are pending approval
 
 // Note the format string "sssssisssiii":
-$stmt = $conn->prepare("INSERT INTO Event (name, event_category, description, event_date, event_time, location_id, contact_phone, contact_email, event_visibility, rso_id, created_by, approved) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("sssssisssiii", $name, $event_category, $description, $event_date, $event_time, $location_id, $contact_phone, $contact_email, $event_visibility, $rso_id, $created_by, $approved);
+$stmt = $conn->prepare("INSERT INTO Event (name, event_category, description, event_date, event_time, location, contact_phone, contact_email, event_visibility, rso_id, created_by, approved) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+$stmt->bind_param("sssssisssiii", $name, $event_category, $description, $event_date, $event_time, $location, $contact_phone, $contact_email, $event_visibility, $rso_id, $created_by, $approved);
 $stmt->execute();
 
 if ($stmt->affected_rows > 0) {

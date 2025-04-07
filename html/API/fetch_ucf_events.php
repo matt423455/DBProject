@@ -80,7 +80,7 @@ foreach ($xml->event as $event) {
         ]);
         exit;
     }
-    $stmt->bind_param("ssssssssi", $name, $description, $date, $time, $category, $location, $contact_email, $created_by);
+    $stmt->bind_param("ssssssss", $name, $description, $date, $time, $category, $location, $contact_email, $created_by);
     
     if ($stmt->execute()) {
         $inserted++;
