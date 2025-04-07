@@ -27,8 +27,8 @@ foreach ($xml->channel->item as $event) {
     $category = "UCF Feed";
     $location = (string)$event->location ?: "UCF Main Campus";
     $contact = "info@ucf.edu";
-    $created_by = null;
-    $university_id = null;
+    $created_by = "";
+    $university_id = 2;
 
     // Prepare and insert into 'events' table
     $sql = "INSERT INTO events (name, description, event_date, event_time, event_category, location_name, contact_email, created_by, university_id)

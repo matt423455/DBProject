@@ -9,56 +9,41 @@
 <body>
     <h1> Welcome to College Events</h1>
     
-    <div class = "logon-container">
+    <div class="logon-container">
 
-        <form class = "login-form">
-        <h2>Login</h2>
-        <div>
-            <label>
-                Username:
-                <input type="text" id="login-username">
-            </label>
-        </div>
-        <div>
-            <label>
-                Password:
-                <input type="password" id="login-password">
-            </label>
-        </div>
-        <button type="button" onclick="loginUser(event)">Login</button>
-        <p id="login-message"></p>
+        <form class="login-form">
+            <h2>Login</h2>
+            <div>
+                <label>
+                    Username:
+                    <input type="text" id="login-username">
+                </label>
+            </div>
+            <div>
+                <label>
+                    Password:
+                    <input type="password" id="login-password">
+                </label>
+            </div>
+            <button type="button" onclick="loginUser(event)">Login</button>
+            <p id="login-message"></p>
         </form>
 
         <hr>
 
-        <form class = "register-form">
-        <h2>Register</h2>
-        <div>
-            <label>
-                Username:
-                <input type="text" id="reg-username">
-            </label>
-        </div>
-        <div>
-            <label>
-                Email:
-                <input type="text" id="reg-email">
-            </label>
-        </div>
-        <div>
-            <label>
-                Password:
-                <input type="password" id="reg-password">
-            </label>
-        </div>
-        <div>
-            <label>
-                University ID:
-                <input type="number" id="reg-university-id">
-            </label>
-        </div>
-        <button type="button" onclick="registerUser(event)">Register</button>
-        <p id="register-message"></p>
+        <form id="register-form">
+            <h1>Registration</h1>
+            <input type="text" id="reg-username" placeholder="Username" required><br>
+            <input type="email" id="reg-email" placeholder="Email" required><br>
+            <input type="password" id="reg-password" placeholder="Password" required><br>
+
+            <label for="reg-university-id">Select University:</label>
+            <select id="reg-university-id" required>
+                <option value="">-- Select University --</option>
+            </select><br>
+
+            <button type="submit">Register</button>
+            <p id="register-message"></p>
         </form>
     </div>
 </body>

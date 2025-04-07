@@ -40,19 +40,37 @@ async function loginUser(event) {
     }
 }
 
-async function registerUser(event) {
-    event.preventDefault(); // prevents refreshing of message
+async function fetchUniversities() {
+    try {
+        let res = await fetch("API/getUniversities.php");
+        let data = await res.json();
+        if (data.success && data.data) {
+            let select = document.getElementById("reg-university-id");
+            data.data.forEach(univ => {
+                let option = document.createElement("option");
+                option.value = univ.university_id;
+                option.textContent = univ.name;
+                select.appendChild(option);
+            });
+        }
+    } catch (err) {
+        console.error("Error fetching universities", err);
+    }
+}
+document.addEventListener("DOMContentLoaded", fetchUniversities);
 
+// Registration handler
+async function registerUser(event) {
+    event.preventDefault();
     const username = document.getElementById("reg-username").value.trim();
     const email = document.getElementById("reg-email").value.trim();
     const password = document.getElementById("reg-password").value.trim();
     const university_id = document.getElementById("reg-university-id").value.trim();
     const msgEl = document.getElementById("register-message");
-
     msgEl.textContent = "";
 
-    if (!username || !email || !password) {
-        msgEl.textContent = "Please enter username, email, and password.";
+    if (!username || !email || !password || !university_id) {
+        msgEl.textContent = "Please fill in all fields.";
         return;
     }
 
@@ -62,15 +80,10 @@ async function registerUser(event) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, email, password, university_id })
         });
-
         let data = await response.json();
-
-        if (!data.success) {
-            msgEl.textContent = data.message || "Registration failed.";
-        } else {
-            msgEl.textContent = "Registration successful! You can now log in.";
-        }
+        msgEl.textContent = data.success ? "Registration successful!" : data.message;
     } catch (err) {
         msgEl.textContent = "Error: " + err.message;
     }
 }
+document.getElementById("register-form").addEventListener("submit", registerUser);

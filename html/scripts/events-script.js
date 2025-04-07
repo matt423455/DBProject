@@ -42,4 +42,5 @@ async function fetchEvents() {
       document.getElementById("events-container").innerHTML = "Error loading events: " + err.message;
     }
   }
-  fetchEvents();
+fetchEvents();
+
