@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'super_admin') {
-    header("Location: events.php");
+    header("Location: events.html");
     exit;
 }
 $user_role = $_SESSION['role'];
