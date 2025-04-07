@@ -44,3 +44,23 @@ async function fetchEvents() {
   }
 fetchEvents();
 
+async function fetchUCFEvents() {
+    try {
+        // Call the UCF events importer API
+        let res = await fetch("API/fetch_ucf_events.php");
+        let data = await res.json();
+        let container = document.getElementById("events-container");
+        container.innerHTML = "";
+
+        // Display the message returned from the API
+        if (data.success) {
+            container.innerHTML = `<p>${data.message}</p>`;
+        } else {
+            container.innerHTML = `<p>Error fetching events: ${data.message}</p>`;
+        }
+    } catch (err) {
+        document.getElementById("events-container").innerHTML = "Error loading events: " + err.message;
+    }
+}
+document.addEventListener("DOMContentLoaded", fetchUCFEvents);
+
