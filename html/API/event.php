@@ -5,12 +5,9 @@ session_start();
 require __DIR__ . '/config.php'; // Adjust path if necessary
 
 // Retrieve all approved events, ordered by date (ascending)
-$sql = "SELECT e.*, l.name AS location_name 
-        FROM Event e 
-        LEFT JOIN Location l ON e.location = l.name 
-        WHERE e.approved = 1 
-        ORDER BY e.event_date ASC";
-        
+// No JOIN on the Location table
+$sql = "SELECT * FROM Event WHERE approved = 1 ORDER BY event_date ASC";
+
 $result = $conn->query($sql);
 
 if (!$result) {
