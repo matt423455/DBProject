@@ -6,7 +6,7 @@ header('Content-Type: application/json');
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-include 'config.php'; // Ensure this is correct
+include 'config.php'; // Ensure this file sets up the $conn database connection
 
 $feedUrl = "https://events.ucf.edu/feed.xml";
 $xml = simplexml_load_file($feedUrl);
@@ -19,18 +19,8 @@ if (!$xml) {
     exit;
 }
 
-// Try to support both RSS and Atom feeds
-$events = [];
-
-// First, check if it's an RSS feed with channel->item
-if (isset($xml->channel->item)) {
-    $events = $xml->channel->item;
-} elseif (isset($xml->entry)) { // Check for Atom feed entries
-    $events = $xml->entry;
-}
-
-// If no events were found, output an appropriate message.
-if (empty($events) || count($events) == 0) {
+// In your provided XML, the root element is <events> and each event is in an <event> tag.
+if (!isset($xml->event)) {
     echo json_encode([
         "success" => true,
         "message" => "No events found in the UCF XML feed."
@@ -39,51 +29,48 @@ if (empty($events) || count($events) == 0) {
 }
 
 $inserted = 0;
-
-foreach ($events as $event) {
-    // Get the event title. For both RSS and Atom, <title> is expected.
-    $name = (string)$event->title;
-    if (!$name) continue; // Skip if there's no title
-
-    // For the description, try multiple possible tags.
-    if (isset($event->description)) {
-         $description = (string)$event->description;
-    } elseif (isset($event->summary)) {
-         $description = (string)$event->summary;
-    } elseif (isset($event->content)) {
-         $description = (string)$event->content;
-    } else {
-         $description = "";
-    }
-
-    // Try to get the start time. RSS feeds may have a <start> tag,
-    // while Atom feeds might use <published> or <updated>.
-    $start = (string)$event->start;
-    if (!$start) {
-        if (isset($event->published)) {
-            $start = (string)$event->published;
-        } elseif (isset($event->updated)) {
-            $start = (string)$event->updated;
-        } else {
-            // If there's no recognizable start time, skip this event.
-            continue;
-        }
+foreach ($xml->event as $event) {
+    // Extract event title; skip if missing.
+    $name = trim((string)$event->title);
+    if (!$name) {
+        continue;
     }
     
-    $startDateTime = strtotime($start);
-    if ($startDateTime === false) continue;
-    $date = date('Y-m-d', $startDateTime);
-    $time = date('H:i:s', $startDateTime);
-
-    // Default values for remaining fields
-    $category = "UCF Feed";
-    // Use the provided location if available, or default to "UCF Main Campus"
-    $location = trim((string)$event->location) ?: "UCF Main Campus";
-    $contact = "info@ucf.edu";
+    // Extract description. It is wrapped in CDATA; you can keep the HTML or strip tags as needed.
+    $description = trim((string)$event->description);
+    
+    // Extract the start date/time.
+    $startDateStr = trim((string)$event->start_date);
+    $startTimestamp = strtotime($startDateStr);
+    if ($startTimestamp === false) {
+        continue; // Skip if start_date is invalid.
+    }
+    $date = date('Y-m-d', $startTimestamp);
+    $time = date('H:i:s', $startTimestamp);
+    
+    // Extract category; fallback to a default value.
+    $category = trim((string)$event->category);
+    if (!$category) {
+        $category = "UCF Feed";
+    }
+    
+    // Extract location; if empty, default to "UCF Main Campus".
+    $location = trim((string)$event->location);
+    if (!$location) {
+        $location = "UCF Main Campus";
+    }
+    
+    // Extract contact email; use a default if missing.
+    $contact_email = trim((string)$event->contact_email);
+    if (!$contact_email) {
+        $contact_email = "info@ucf.edu";
+    }
+    
+    // Set additional fields (if needed, add more from the XML such as room or virtual_url)
     $created_by = "";
-    $university_id = 2;  // UCF's university id
+    $university_id = 2; // UCF university id
 
-    // Prepare SQL to insert the event
+    // Prepare and execute insert into the events table.
     $sql = "INSERT INTO events (name, description, event_date, event_time, event_category, location_name, contact_email, created_by, university_id)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
@@ -94,8 +81,7 @@ foreach ($events as $event) {
         ]);
         exit;
     }
-    
-    $stmt->bind_param("ssssssssi", $name, $description, $date, $time, $category, $location, $contact, $created_by, $university_id);
+    $stmt->bind_param("ssssssssi", $name, $description, $date, $time, $category, $location, $contact_email, $created_by, $university_id);
     
     if ($stmt->execute()) {
         $inserted++;
@@ -106,6 +92,6 @@ foreach ($events as $event) {
 echo json_encode([
     "success" => true,
     "message" => "$inserted events imported successfully from UCF feed.",
-    "data" => [] // You could optionally return an array of imported events here.
+    "data" => [] // Optionally, you could return an array of the imported events
 ]);
 ?>
