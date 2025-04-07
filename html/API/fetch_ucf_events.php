@@ -67,7 +67,7 @@ foreach ($xml->event as $event) {
     }
     
     // Set additional fields (if needed, add more from the XML such as room or virtual_url)
-    $created_by = 1;
+    $created_by = 10;
 
     // Prepare and execute insert into the events table.
     $sql = "INSERT INTO Event (name, description, event_date, event_time, event_category, location, contact_email, created_by)
