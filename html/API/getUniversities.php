@@ -1,5 +1,4 @@
 <?php
-// File: API/getUniversities.php
 header('Content-Type: application/json');
 include 'config.php'; // Adjust path as necessary
 

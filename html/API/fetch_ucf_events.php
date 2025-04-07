@@ -6,13 +6,11 @@ header('Content-Type: application/json');
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-include 'config.php'; // Ensure your config.php is correct
+include 'config.php'; // Ensure this is correct
 
-// Load the XML feed from UCF
 $feedUrl = "https://events.ucf.edu/feed.xml";
 $xml = simplexml_load_file($feedUrl);
 
-// Handle error if feed is unavailable
 if (!$xml) {
     echo json_encode([
         "success" => false,
@@ -21,8 +19,18 @@ if (!$xml) {
     exit;
 }
 
-// Check if the XML structure contains the expected channel and items
-if (!isset($xml->channel) || !isset($xml->channel->item)) {
+// Try to support both RSS and Atom feeds
+$events = [];
+
+// First, check if it's an RSS feed with channel->item
+if (isset($xml->channel->item)) {
+    $events = $xml->channel->item;
+} elseif (isset($xml->entry)) { // Check for Atom feed entries
+    $events = $xml->entry;
+}
+
+// If no events were found, output an appropriate message.
+if (empty($events) || count($events) == 0) {
     echo json_encode([
         "success" => true,
         "message" => "No events found in the UCF XML feed."
@@ -32,32 +40,50 @@ if (!isset($xml->channel) || !isset($xml->channel->item)) {
 
 $inserted = 0;
 
-// Iterate only if we have at least one item
-foreach ($xml->channel->item as $event) {
+foreach ($events as $event) {
+    // Get the event title. For both RSS and Atom, <title> is expected.
     $name = (string)$event->title;
-    $description = (string)$event->description;
+    if (!$name) continue; // Skip if there's no title
 
-    // Ensure the event start exists and is valid
+    // For the description, try multiple possible tags.
+    if (isset($event->description)) {
+         $description = (string)$event->description;
+    } elseif (isset($event->summary)) {
+         $description = (string)$event->summary;
+    } elseif (isset($event->content)) {
+         $description = (string)$event->content;
+    } else {
+         $description = "";
+    }
+
+    // Try to get the start time. RSS feeds may have a <start> tag,
+    // while Atom feeds might use <published> or <updated>.
     $start = (string)$event->start;
     if (!$start) {
-        continue; // Skip events with no start time
+        if (isset($event->published)) {
+            $start = (string)$event->published;
+        } elseif (isset($event->updated)) {
+            $start = (string)$event->updated;
+        } else {
+            // If there's no recognizable start time, skip this event.
+            continue;
+        }
     }
+    
     $startDateTime = strtotime($start);
-    if ($startDateTime === false) {
-        continue; // Skip events with invalid start time format
-    }
+    if ($startDateTime === false) continue;
     $date = date('Y-m-d', $startDateTime);
     $time = date('H:i:s', $startDateTime);
 
-    // Set other required/default values
+    // Default values for remaining fields
     $category = "UCF Feed";
-    // Use event location if provided; otherwise default
+    // Use the provided location if available, or default to "UCF Main Campus"
     $location = trim((string)$event->location) ?: "UCF Main Campus";
     $contact = "info@ucf.edu";
     $created_by = "";
-    $university_id = 2; // UCF's university id
+    $university_id = 2;  // UCF's university id
 
-    // Prepare and execute insert statement into 'events' table
+    // Prepare SQL to insert the event
     $sql = "INSERT INTO events (name, description, event_date, event_time, event_category, location_name, contact_email, created_by, university_id)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
@@ -68,8 +94,9 @@ foreach ($xml->channel->item as $event) {
         ]);
         exit;
     }
+    
     $stmt->bind_param("ssssssssi", $name, $description, $date, $time, $category, $location, $contact, $created_by, $university_id);
-
+    
     if ($stmt->execute()) {
         $inserted++;
     }
@@ -79,6 +106,6 @@ foreach ($xml->channel->item as $event) {
 echo json_encode([
     "success" => true,
     "message" => "$inserted events imported successfully from UCF feed.",
-    "data" => []   // Optionally, add data if you decide to return an array of imported events
+    "data" => [] // You could optionally return an array of imported events here.
 ]);
 ?>
