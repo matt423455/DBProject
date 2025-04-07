@@ -1,27 +1,48 @@
 <?php
+header('Content-Type: application/json');
 include 'config.php';
 
-// UCF API URL (XML feed)
-$api_url = "https://events.ucf.edu/feed.xml";
+// Load the XML feed
+$feedUrl = "https://events.ucf.edu/feed.xml";
+$xml = simplexml_load_file($feedUrl);
 
-// Load the XML file
-$xml = simplexml_load_file($api_url);
-
-if ($xml === false) {
-    die("Error loading XML file.");
+// Handle error if feed is unavailable
+if (!$xml) {
+    echo json_encode(["success" => false, "message" => "Failed to load UCF events feed."]);
+    exit;
 }
 
-// Loop through each event and insert it into the database
-foreach ($xml->event as $event) {
-    $name = (string) $event->title;
-    $description = (string) $event->description;
-    $date = (string) $event->date;
+$inserted = 0;
 
-    $sql = "INSERT INTO events (name, description, date) VALUES (?, ?, ?)";
+foreach ($xml->channel->item as $event) {
+    $name = (string)$event->title;
+    $description = (string)$event->description;
+
+    // Date and time parsing
+    $startDateTime = strtotime((string)$event->start);
+    $date = date('Y-m-d', $startDateTime);
+    $time = date('H:i:s', $startDateTime);
+
+    // Fill in other required/default values
+    $category = "UCF Feed";
+    $location = (string)$event->location ?: "UCF Main Campus";
+    $contact = "info@ucf.edu";
+    $created_by = null;
+    $university_id = null;
+
+    // Prepare and insert into 'events' table
+    $sql = "INSERT INTO events (name, description, event_date, event_time, event_category, location_name, contact_email, created_by, university_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sss", $name, $description, $date);
-    $stmt->execute();
+    $stmt->bind_param("ssssssssi", $name, $description, $date, $time, $category, $location, $contact, $created_by, $university_id);
+    
+    if ($stmt->execute()) {
+        $inserted++;
+    }
 }
 
-echo "UCF events imported successfully!";
+echo json_encode([
+    "success" => true,
+    "message" => "$inserted events imported successfully from UCF feed."
+]);
 ?>
