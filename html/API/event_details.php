@@ -14,7 +14,7 @@ if (!$event_id) {
 $stmt = $conn->prepare("
     SELECT e.*, l.name AS location_name 
     FROM Event e 
-    LEFT JOIN Location l ON e.location_id = l.location_id 
+    LEFT JOIN Location l ON e.location = l.name 
     WHERE e.event_id = ? AND e.approved = 1
     LIMIT 1
 ");

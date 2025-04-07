@@ -7,7 +7,7 @@ require __DIR__ . '/config.php'; // Adjust path if necessary
 // Retrieve all approved events, ordered by date (ascending)
 $sql = "SELECT e.*, l.name AS location_name 
         FROM Event e 
-        LEFT JOIN Location l ON e.location_id = l.location_id 
+        LEFT JOIN Location l ON e.location = l.name 
         WHERE e.approved = 1 
         ORDER BY e.event_date ASC";
         

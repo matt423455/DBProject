@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 
 require __DIR__ . '/config.php';
 
-$query = "SELECT event_id, name, event_category, description, event_date, event_time, location_id, contact_phone, contact_email, event_visibility, rso_id, created_by, approved FROM Event";
+$query = "SELECT event_id, name, event_category, description, event_date, event_time, location, contact_phone, contact_email, event_visibility, rso_id, created_by, approved FROM Event";
 $result = $conn->query($query);
 
 $events = [];

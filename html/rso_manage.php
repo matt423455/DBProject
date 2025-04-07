@@ -78,26 +78,6 @@ if (empty($managedRSOs)) {
       }
       echo "userPrivilege = " . ($isLeader ? "'leader'" : "'officer'") . ";";
     ?>
-
-    async function fetchLocations(){
-       try {
-            let res = await fetch("API/getLocations.php");
-            let data = await res.json();
-            if (data.success && data.data) {
-                 let select = document.getElementById("location-id");
-                 data.data.forEach(loc => {
-                    let option = document.createElement("option");
-                    option.value = loc.location_id;
-                    option.textContent = loc.name;
-                    select.appendChild(option);
-                 });
-            }
-       } catch(err) {
-             console.error("Error fetching locations", err);
-       }
-    }
-    document.addEventListener("DOMContentLoaded", fetchLocations);
-
     
     async function createEvent(event) {
       event.preventDefault();
@@ -106,7 +86,7 @@ if (empty($managedRSOs)) {
       const details = document.getElementById('event-details').value.trim();
       const eventDate = document.getElementById('event-date').value.trim();
       const eventTime = document.getElementById('event-time').value.trim();
-      const locationId = document.getElementById('location-id').value.trim();
+      const locationId = document.getElementById('location').value.trim();
       const contactPhone = document.getElementById('contact-phone').value.trim();
       const contactEmail = document.getElementById('contact-email').value.trim();
       const visibility = document.getElementById('event-visibility').value.trim();
@@ -129,7 +109,7 @@ if (empty($managedRSOs)) {
             description: details,
             event_date: eventDate,
             event_time: eventTime,
-            location_id: locationId,
+            location: location,
             contact_phone: contactPhone,
             contact_email: contactEmail,
             event_visibility: visibility
@@ -187,10 +167,7 @@ if (empty($managedRSOs)) {
           <textarea id="event-details" placeholder="Event Details" required></textarea><br>
           <input type="date" id="event-date" required><br>
           <input type="time" id="event-time" required><br>
-          <label for="location-id">Select Location:</label>
-          <select id="location-id" required>
-              <option value="">-- Select Location --</option>
-          </select><br>
+          <input type="number" id="location-id" placeholder="Location ID" required><br>
           <input type="text" id="contact-phone" placeholder="Contact Phone" required><br>
           <input type="email" id="contact-email" placeholder="Contact Email" required><br>
           <select id="event-visibility" required>

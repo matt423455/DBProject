@@ -8,7 +8,7 @@ ini_set('display_errors', 1);
 
 include 'config.php';
 
-$query = "SELECT location_id, name FROM Location";
+$query = "SELECT location, name FROM Location";
 $result = $conn->query($query);
 
 $locations = [];
