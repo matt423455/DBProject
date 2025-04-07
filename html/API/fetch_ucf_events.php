@@ -71,7 +71,7 @@ foreach ($xml->event as $event) {
     $university_id = 2; // UCF university id
 
     // Prepare and execute insert into the events table.
-    $sql = "INSERT INTO event (name, description, event_date, event_time, event_category, location_name, contact_email, created_by, university_id)
+    $sql = "INSERT INTO Event (name, description, event_date, event_time, event_category, location_name, contact_email, created_by, university_id)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
