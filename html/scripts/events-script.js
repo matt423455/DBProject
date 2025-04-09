@@ -37,34 +37,36 @@ async function checkMembership(userId, rsoId) {
 
 // Fetch and combine our events and UCF events from two API endpoints
 async function filterEvents(events) {
-    const filteredEvents = [];
-
-    // Process events sequentially or concurrently
-    for (let event of events) {
+    // Map each event to either the event (if allowed) or null
+    const eventChecks = events.map(async event => {
         const visibility = event.event_visibility;
 
         if (visibility === 'public') {
-            filteredEvents.push(event);
+            return event;
         } else if (visibility === 'private') {
-            // Make sure currentUser is available
-            if (currentUser && currentUser.email && currentUser.email.toLowerCase().includes("ucf")) {
-                filteredEvents.push(event);
+            if (currentUser?.email?.toLowerCase().includes("ucf")) {
+                return event;
             }
+            return null;
         } else if (visibility === 'RSO') {
-            // RSO events: Check if the user is logged in and a member of the event's RSO
-            if (!event.rso_id || !currentUser || !currentUser.user_id) {
-                continue;
+            if (!event.rso_id || !currentUser?.user_id) {
+                console.log("RSO event skipped due to missing rso_id or user_id", event);
+                return null;
             }
-            // Await the result of the membership check
+            // Await the membership check
             const isMember = await checkMembership(currentUser.user_id, event.rso_id);
-            if (isMember) {
-                filteredEvents.push(event);
-            }
+            console.log(`Checking membership for user ${currentUser.user_id} in RSO ${event.rso_id}:`, isMember);
+            return isMember ? event : null;
         }
-    }
+        return null;
+    });
 
-    return filteredEvents;
+    // Wait for all membership checks to complete
+    const results = await Promise.all(eventChecks);
+    // Filter out the null values
+    return results.filter(event => event !== null);
 }
+
 
 async function fetchCombinedEvents() {
     try {
