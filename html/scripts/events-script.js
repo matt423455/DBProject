@@ -7,7 +7,7 @@ async function fetchUserData() {
         let res = await fetch("API/user.php"); // Adjust API path if needed
         let data = await res.json();
 
-        currentUser = data;
+        currentUser = data.user;
 
         if (data.success) {
             document.getElementById("user-greeting").textContent = `Hello, ${data.user.username}`;
