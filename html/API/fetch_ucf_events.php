@@ -2,9 +2,11 @@
 // File: API/fetch_ucf_events.php
 header('Content-Type: application/json');
 
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
 // Enable error reporting for debugging (disable in production)
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+// error_reporting(E_ALL);
 
 include 'config.php'; // Ensure this file sets up the $conn database connection
 
@@ -82,9 +84,24 @@ foreach ($xml->event as $event) {
     }
     $stmt->bind_param("sssssssi", $name, $description, $date, $time, $category, $location, $contact_email, $created_by);
     
-    if ($stmt->execute()) {
-        $inserted++;
+    try {
+        if ($stmt->execute()) {
+            $inserted++;
+        }
+    } catch (mysqli_sql_exception $e) {
+        // Check for the specific SQLSTATE from trigger
+        if ($e->getCode() === '45000') {
+            // Log or skip the duplicate silently
+            continue;
+        } else {
+            echo json_encode([
+                "success" => false,
+                "message" => "Database error: " . $e->getMessage()
+            ]);
+            exit;
+        }
     }
+    
     $stmt->close();
 }
 
