@@ -7,7 +7,7 @@ header('Content-Type: application/json');
 
 // Include your database connection file.
 // It should create and assign a MySQLi connection to the $conn variable.
-require_once 'db_connect.php';
+require_once 'config.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Check if user_id and rso_id were sent in the POST request
