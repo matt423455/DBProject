@@ -232,9 +232,6 @@
 
                 currentUser = data.user;
 
-                if (data.success) {
-                    document.getElementById("user-greeting").textContent = `Hello, ${data.user.username}`;
-                }
             } catch (err) {
                 console.error("Error fetching user data:", err);
             }
