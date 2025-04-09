@@ -36,70 +36,89 @@ async function checkMembership(userId, rsoId) {
 }
 
 // Fetch and combine our events and UCF events from two API endpoints
+async function filterEvents(events) {
+    const filteredEvents = [];
+
+    // Process events sequentially or concurrently
+    for (let event of events) {
+        const visibility = event.event_visibility;
+
+        if (visibility === 'public') {
+            filteredEvents.push(event);
+        } else if (visibility === 'private') {
+            // Make sure currentUser is available
+            if (currentUser && currentUser.email && currentUser.email.toLowerCase().includes("ucf")) {
+                filteredEvents.push(event);
+            }
+        } else if (visibility === 'RSO') {
+            // RSO events: Check if the user is logged in and a member of the event's RSO
+            if (!event.rso_id || !currentUser || !currentUser.user_id) {
+                continue;
+            }
+            // Await the result of the membership check
+            const isMember = await checkMembership(currentUser.user_id, event.rso_id);
+            if (isMember) {
+                filteredEvents.push(event);
+            }
+        }
+    }
+
+    return filteredEvents;
+}
+
 async function fetchCombinedEvents() {
     try {
-        // Use Promise.all to fetch events from both endpoints concurrently
+        // Fetch events concurrently
         let [ourRes, ucfRes] = await Promise.all([
             fetch("API/event.php"),
-            fetch("API/fetch_ucf_events.php")  // Make sure this endpoint returns event data in JSON format
+            fetch("API/fetch_ucf_events.php")
         ]);
         let ourData = await ourRes.json();
         let ucfData = await ucfRes.json();
 
         let combinedEvents = [];
-        if (ourData.success && ourData.data && Array.isArray(ourData.data)) {
+        if (ourData.success && Array.isArray(ourData.data)) {
             combinedEvents = combinedEvents.concat(ourData.data);
         }
-        if (ucfData.success && ucfData.data && Array.isArray(ucfData.data)) {
+        if (ucfData.success && Array.isArray(ucfData.data)) {
             combinedEvents = combinedEvents.concat(ucfData.data);
         }
 
-        // Optionally sort events by date and time (adjust date/time formatting as needed)
+        // Optional: sort events by date and time
         combinedEvents.sort((a, b) => {
-            return new Date((a.event_date || '') + " " + (a.event_time || '')) - new Date((b.event_date || '') + " " + (b.event_time || ''));
+            return new Date((a.event_date || '') + " " + (a.event_time || '')) -
+                new Date((b.event_date || '') + " " + (b.event_time || ''));
         });
 
-        combinedEvents = combinedEvents.filter(event => {
-            const visibility = event.event_visibility;
-            if (visibility === 'public') {
-                return true;
-            } else if (visibility === 'private') {
-                return currentUser.email &&
-                    currentUser.email.toLowerCase().includes("ucf");
-            } else if (visibility === 'RSO') {
-                // For RSO events, we need to check:
-                // 1. The event has a valid rso_id.
-                // 2. The current user is logged in (has a user_id).
-                // 3. The user is a member of the RSO (their rso_ids array includes event.rso_id).
-                if (!event.rso_id || !currentUser.user_id) {
-                    return false;
-                }
+        // Ensure the currentUser is loaded first.
+        if (!currentUser) {
+            // Optionally, wait until fetchUserData is complete
+            // You might want to call await fetchUserData() here if you refactor it to return a promise.
+            console.error("Current user data not loaded.");
+            return;
+        }
 
-                return (checkMembership(currentUser.user_id, event.rso_id))
-            }
-            return false;
-        });
+        // Asynchronously filter events
+        const validEvents = await filterEvents(combinedEvents);
 
+        // Display events
         let container = document.getElementById("events-container");
         container.innerHTML = "";
-        if (combinedEvents.length) {
-            combinedEvents.forEach(event => {
+        if (validEvents.length) {
+            validEvents.forEach(event => {
                 try {
-                    // Add fallbacks so nothing crashes
                     const name = event.name || "Untitled Event";
                     const category = event.event_category || "General";
                     const description = event.description?.substring(0, 100) || "No description.";
                     const date = event.event_date || "Unknown Date";
                     const time = event.event_time || "Unknown Time";
 
-                    // Create a clickable div for each event
                     let div = document.createElement("div");
                     div.classList.add("event");
                     div.innerHTML = `<h3>${name} (${category})</h3>
-                        <p>${description}...</p>
-                        <p><strong>Date:</strong> ${date} at ${time}</p>`;
+                                     <p>${description}...</p>
+                                     <p><strong>Date:</strong> ${date} at ${time}</p>`;
 
-                    // If an event_id exists, add a click listener to redirect to details page
                     if (event.event_id) {
                         div.addEventListener("click", () => {
                             window.location.href = "event_detail.html?event_id=" + event.event_id;
@@ -117,4 +136,9 @@ async function fetchCombinedEvents() {
         document.getElementById("events-container").innerHTML = "Error loading events: " + err.message;
     }
 }
-document.addEventListener("DOMContentLoaded", fetchCombinedEvents);
+
+document.addEventListener("DOMContentLoaded", async () => {
+    // First fetch the user data and then combined events.
+    await fetchUserData();
+    await fetchCombinedEvents();
+});
