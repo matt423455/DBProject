@@ -86,4 +86,6 @@ async function registerUser(event) {
         msgEl.textContent = "Error: " + err.message;
     }
 }
-document.getElementById("register-form").addEventListener("submit", registerUser);
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("register-form").addEventListener("submit", registerUser);
+});
