@@ -25,7 +25,7 @@ if ($name === '' || $description === '' || $university_id === '') {
 $valid_members = [];
 foreach ($members as $email) {
     $email = trim($email);
-    if (filter_var($email, FILTER_VALIDATE_EMAIL) && str_ends_with($email, '@ucf.edu')) {
+    if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $valid_members[] = $email;
     }
 }
