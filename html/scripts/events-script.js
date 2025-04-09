@@ -15,6 +15,23 @@ async function fetchUserData() {
 }
 document.addEventListener("DOMContentLoaded", fetchUserData);
 
+async function checkMembership(userId, rsoId) {
+    try {
+        const response = await fetch('checkMembership.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `user_id=${userId}&rso_id=${rsoId}`
+        });
+        const result = await response.json();
+        return result.in_rso;
+    } catch (error) {
+        console.error('Error checking membership:', error);
+        return false;
+    }
+}
+
 // Fetch and combine our events and UCF events from two API endpoints
 async function fetchCombinedEvents() {
     try {
@@ -37,6 +54,27 @@ async function fetchCombinedEvents() {
         // Optionally sort events by date and time (adjust date/time formatting as needed)
         combinedEvents.sort((a, b) => {
             return new Date((a.event_date || '') + " " + (a.event_time || '')) - new Date((b.event_date || '') + " " + (b.event_time || ''));
+        });
+
+        combinedEvents = combinedEvents.filter(event => {
+            const visibility = event.event_visibility;
+            if (visibility === 'public') {
+                return true;
+            } else if (visibility === 'private') {
+                return currentUser.email &&
+                    currentUser.email.toLowerCase().includes("ucf");
+            } else if (visibility === 'RSO') {
+                // For RSO events, we need to check:
+                // 1. The event has a valid rso_id.
+                // 2. The current user is logged in (has a user_id).
+                // 3. The user is a member of the RSO (their rso_ids array includes event.rso_id).
+                if (!event.rso_id || !currentUser.user_id) {
+                    return false;
+                }
+
+                return (checkMembership(currentUser.user_id, event.rso_id))
+            }
+            return false;
         });
 
         let container = document.getElementById("events-container");
