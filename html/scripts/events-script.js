@@ -36,26 +36,38 @@ async function fetchCombinedEvents() {
 
         // Optionally sort events by date and time (adjust date/time formatting as needed)
         combinedEvents.sort((a, b) => {
-            return new Date(a.event_date + " " + a.event_time) - new Date(b.event_date + " " + b.event_time);
+            return new Date((a.event_date || '') + " " + (a.event_time || '')) - new Date((b.event_date || '') + " " + (b.event_time || ''));
         });
 
         let container = document.getElementById("events-container");
         container.innerHTML = "";
         if (combinedEvents.length) {
             combinedEvents.forEach(event => {
-                // Create a clickable div for each event
-                let div = document.createElement("div");
-                div.classList.add("event");
-                div.innerHTML = `<h3>${event.name} (${event.event_category})</h3>
-                    <p>${event.description.substring(0, 100)}...</p>
-                    <p><strong>Date:</strong> ${event.event_date} at ${event.event_time}</p>`;
-                // If an event_id exists, add a click listener to redirect to details page
-                if (event.event_id) {
-                    div.addEventListener("click", () => {
-                        window.location.href = "event_detail.html?event_id=" + event.event_id;
-                    });
+                try {
+                    // Add fallbacks so nothing crashes
+                    const name = event.name || "Untitled Event";
+                    const category = event.event_category || "General";
+                    const description = event.description?.substring(0, 100) || "No description.";
+                    const date = event.event_date || "Unknown Date";
+                    const time = event.event_time || "Unknown Time";
+
+                    // Create a clickable div for each event
+                    let div = document.createElement("div");
+                    div.classList.add("event");
+                    div.innerHTML = `<h3>${name} (${category})</h3>
+                        <p>${description}...</p>
+                        <p><strong>Date:</strong> ${date} at ${time}</p>`;
+
+                    // If an event_id exists, add a click listener to redirect to details page
+                    if (event.event_id) {
+                        div.addEventListener("click", () => {
+                            window.location.href = "event_detail.html?event_id=" + event.event_id;
+                        });
+                    }
+                    container.appendChild(div);
+                } catch (err) {
+                    console.error("Error rendering event:", err);
                 }
-                container.appendChild(div);
             });
         } else {
             container.innerHTML = "No events found.";
