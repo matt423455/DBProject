@@ -21,12 +21,12 @@
       
 </head>
 <body>
-  <div class="top-right-links">
-    <a href="admin_panel.php">Admin Panel</a>
-    <a href="rso_user.php">RSOs</a>
-    <a href="events.html">Events</a>
-    <a href="/API/logout.php">Logout</a>
-</div>
+    <div class="top-right-links">
+        <a href="admin_panel.php">Admin Panel</a>
+        <a href="rso_user.php">RSOs</a>
+        <a href="events.html">Events</a>
+        <a href="/API/logout.php">Logout</a>
+    </div>
 
     <h1 id="event-name">Event Details</h1>
     <div id="event-details">Loading event details...</div>
@@ -40,92 +40,201 @@
     <p id="comment-message"></p>
 
     <script>
-    // Extract event_id from the URL query parameters
-    const params = new URLSearchParams(window.location.search);
-    const event_id = params.get("event_id");
-    if (!event_id) {
-      document.body.innerHTML = "<h2>Error: No event specified.</h2>";
-      throw new Error("No event_id in URL.");
-    }
+        // Extract event_id from the URL query parameters
+        const params = new URLSearchParams(window.location.search);
+        const event_id = params.get("event_id");
+        if (!event_id) {
+            document.body.innerHTML = "<h2>Error: No event specified.</h2>";
+            throw new Error("No event_id in URL.");
+        }
 
-    // Fetch event details from the API
-    async function fetchEventDetails() {
-      try {
-        let res = await fetch("API/event_details.php?event_id=" + event_id);
-        let data = await res.json();
-        if (data.success) {
-          document.getElementById("event-name").textContent = data.data.name;
-          document.getElementById("event-details").innerHTML = `
+        // Fetch event details from the API
+        async function fetchEventDetails() {
+            try {
+                let res = await fetch("API/event_details.php?event_id=" + event_id);
+                let data = await res.json();
+                if (data.success) {
+                    document.getElementById("event-name").textContent = data.data.name;
+                    document.getElementById("event-details").innerHTML = `
             <p><strong>Category:</strong> ${data.data.event_category}</p>
             <p><strong>Description:</strong> ${data.data.description}</p>
             <p><strong>Date:</strong> ${data.data.event_date} at ${data.data.event_time}</p>
             <p><strong>Location:</strong> ${data.data.location_name || "N/A"}</p>
             <p><strong>Contact:</strong> ${data.data.contact_email || ""} ${data.data.contact_phone || ""}</p>
           `;
-        } else {
-          document.getElementById("event-details").textContent = data.message;
+                } else {
+                    document.getElementById("event-details").textContent = data.message;
+                }
+            } catch (err) {
+                document.getElementById("event-details").textContent = "Error: " + err.message;
+            }
         }
-      } catch (err) {
-        document.getElementById("event-details").textContent = "Error: " + err.message;
-      }
-    }
 
-    // Fetch comments for this event from the API
-    async function fetchComments() {
-      try {
-        let res = await fetch("API/comments.php?event_id=" + event_id);
-        let data = await res.json();
-        let container = document.getElementById("comments-container");
-        container.innerHTML = "";
-        if (data.success && data.data.length > 0) {
-          data.data.forEach(comment => {
-            let div = document.createElement("div");
-            div.classList.add("comment");
-            div.innerHTML = `<p>${comment.comment_text}</p>
-                             <p><small>By ${comment.username} on ${comment.created_at}</small></p>`;
-            container.appendChild(div);
-          });
-        } else {
-          container.innerHTML = "No comments yet.";
+        // Fetch comments for this event from the API and render with edit/delete options
+        async function fetchComments() {
+            try {
+                let res = await fetch("API/comments.php?event_id=" + event_id);
+                let data = await res.json();
+                let container = document.getElementById("comments-container");
+                container.innerHTML = "";
+                if (data.success && data.data.length > 0) {
+                    data.data.forEach(comment => {
+                        let div = document.createElement("div");
+                        div.classList.add("comment");
+                        div.setAttribute("data-comment-id", comment.comment_id);
+                        // Display the comment text and meta-data
+                        div.innerHTML = `
+              <p class="comment-text">${comment.comment_text}</p>
+              <p><small>By ${comment.username} on ${comment.created_at}</small></p>
+            `;
+                        // Check if the current user is the owner of the comment
+                        if (currentUser && parseInt(comment.user_id) === parseInt(currentUser.user_id)) {
+                            // Create and attach Edit and Delete buttons
+                            const actionsDiv = document.createElement("div");
+                            actionsDiv.classList.add("comment-actions");
+
+                            const editBtn = document.createElement("button");
+                            editBtn.textContent = "Edit";
+                            editBtn.addEventListener("click", () => enableEdit(div, comment));
+                            actionsDiv.appendChild(editBtn);
+
+                            const deleteBtn = document.createElement("button");
+                            deleteBtn.textContent = "Delete";
+                            deleteBtn.addEventListener("click", () => deleteComment(comment.comment_id));
+                            actionsDiv.appendChild(deleteBtn);
+
+                            div.appendChild(actionsDiv);
+                        }
+                        container.appendChild(div);
+                    });
+                } else {
+                    container.innerHTML = "No comments yet.";
+                }
+            } catch (err) {
+                document.getElementById("comments-container").textContent = "Error loading comments: " + err.message;
+            }
         }
-      } catch (err) {
-        document.getElementById("comments-container").textContent = "Error loading comments: " + err.message;
-      }
-    }
 
-    // Post a new comment using the API
-    async function postComment() {
-      const commentText = document.getElementById("comment-text").value.trim();
-      const msgEl = document.getElementById("comment-message");
-      msgEl.textContent = "";
+        // Enable inline editing of a comment
+        function enableEdit(commentDiv, comment) {
+            // Get the current comment text element
+            const textP = commentDiv.querySelector(".comment-text");
+            const oldText = textP.textContent;
 
-      if (!commentText) {
-        msgEl.textContent = "Please write a comment before posting.";
-        return;
-      }
+            // Replace the current text with a textarea prefilled with the old text
+            const textarea = document.createElement("textarea");
+            textarea.value = oldText;
+            textarea.rows = 4;
+            textarea.cols = 50;
 
-      try {
-        let res = await fetch("API/comments.php", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ event_id, comment_text: commentText })
-        });
-        let data = await res.json();
-        if (data.success) {
-          msgEl.textContent = "Comment posted successfully.";
-          document.getElementById("comment-text").value = "";
-          fetchComments(); // refresh the comment list
-        } else {
-          msgEl.textContent = data.message || "Failed to post comment.";
+            // Create Save and Cancel buttons
+            const saveBtn = document.createElement("button");
+            saveBtn.textContent = "Save";
+            const cancelBtn = document.createElement("button");
+            cancelBtn.textContent = "Cancel";
+
+            // Clear out the commentDiv content and rebuild it for editing
+            commentDiv.innerHTML = "";
+            commentDiv.appendChild(textarea);
+            commentDiv.appendChild(saveBtn);
+            commentDiv.appendChild(cancelBtn);
+
+            saveBtn.addEventListener("click", async () => {
+                const newText = textarea.value.trim();
+                if (!newText) {
+                    alert("Comment text cannot be empty.");
+                    return;
+                }
+                await updateComment(comment.comment_id, newText);
+            });
+
+            cancelBtn.addEventListener("click", () => {
+                // Re-render comments to restore original view
+                fetchComments();
+            });
         }
-      } catch (err) {
-        msgEl.textContent = "Error: " + err.message;
-      }
-    }
 
-    // Initial data fetch
-    fetchEventDetails();
-    fetchComments();
+        // Send an update request for a comment using the PUT method
+        async function updateComment(commentId, newText) {
+            try {
+                let res = await fetch("API/comments.php", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ comment_id: commentId, comment_text: newText })
+                });
+                let data = await res.json();
+                if (data.success) {
+                    alert("Comment updated successfully.");
+                    fetchComments();
+                } else {
+                    alert(data.message || "Failed to update comment.");
+                }
+            } catch (err) {
+                alert("Error updating comment: " + err.message);
+            }
+        }
+
+        // Delete a comment using the DELETE method
+        async function deleteComment(commentId) {
+            if (!confirm("Are you sure you want to delete this comment?")) return;
+            try {
+                let res = await fetch("API/comments.php", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ comment_id: commentId })
+                });
+                let data = await res.json();
+                if (data.success) {
+                    alert("Comment deleted successfully.");
+                    fetchComments();
+                } else {
+                    alert(data.message || "Failed to delete comment.");
+                }
+            } catch (err) {
+                alert("Error deleting comment: " + err.message);
+            }
+        }
+
+        // Post a new comment using the API
+        async function postComment() {
+            const commentText = document.getElementById("comment-text").value.trim();
+            const msgEl = document.getElementById("comment-message");
+            msgEl.textContent = "";
+
+            if (!commentText) {
+                msgEl.textContent = "Please write a comment before posting.";
+                return;
+            }
+
+            try {
+                let res = await fetch("API/comments.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ event_id, comment_text: commentText })
+                });
+                let data = await res.json();
+                if (data.success) {
+                    msgEl.textContent = "Comment posted successfully.";
+                    document.getElementById("comment-text").value = "";
+                    fetchComments(); // refresh the comment list
+                } else {
+                    msgEl.textContent = data.message || "Failed to post comment.";
+                }
+            } catch (err) {
+                msgEl.textContent = "Error: " + err.message;
+            }
+        }
+
+        // Make sure currentUser is loaded before we render comments
+        async function initPage() {
+            // First, fetch user data so currentUser is set
+            await fetchUserData();
+            fetchEventDetails();
+            fetchComments();
+        }
+
+        document.addEventListener("DOMContentLoaded", initPage);
     </script>
+
 </body>
 </html>
