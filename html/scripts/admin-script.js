@@ -114,4 +114,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     loadRSOs();
+
+    // RSO creation form handling with member enforcement
+    const createRsoForm = document.getElementById('create-rso-form');
+    if (createRsoForm) {
+        createRsoForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('rso-name').value.trim();
+            const description = document.getElementById('rso-description').value.trim();
+            const universityId = document.getElementById('university-id').value.trim();
+
+            const members = [];
+            for (let i = 1; i <= 5; i++) {
+                const email = document.getElementById(`member${i}`).value.trim();
+                if (email) members.push(email);
+            }
+
+            const messageEl = document.getElementById('create-rso-message');
+            messageEl.textContent = '';
+
+            if (members.length < 5) {
+                messageEl.textContent = 'Please enter 5 student emails to activate the RSO.';
+                return;
+            }
+
+            try {
+                const res = await fetch('API/create_rso.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description, university_id: universityId, members })
+                });
+                const data = await res.json();
+                messageEl.textContent = data.message;
+            } catch (err) {
+                messageEl.textContent = 'Error: ' + err.message;
+            }
+        });
+    }
+
 });

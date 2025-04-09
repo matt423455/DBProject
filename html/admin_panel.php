@@ -55,6 +55,31 @@ $username  = $_SESSION['username'] ?? 'Super Admin';
             <div id="pending-rso-container">Loading pending RSOs...</div>
         </section>
 
+        <!-- Create New RSO with Email Requirement -->
+        <section id="create-new-rso">
+            <h2>Create New RSO</h2>
+            <form id="create-rso-form">
+                <label for="rso-name">RSO Name:</label>
+                <input type="text" id="rso-name" required><br>
+
+                <label for="rso-description">Description:</label>
+                <input type="text" id="rso-description" required><br>
+
+                <label for="university-id">University ID:</label>
+                <input type="number" id="university-id" required><br>
+
+                <p><strong>Enter 5 member emails (@ucf.edu):</strong></p>
+                <input type="email" id="member1" placeholder="Member 1 Email" required><br>
+                <input type="email" id="member2" placeholder="Member 2 Email" required><br>
+                <input type="email" id="member3" placeholder="Member 3 Email" required><br>
+                <input type="email" id="member4" placeholder="Member 4 Email" required><br>
+                <input type="email" id="member5" placeholder="Member 5 Email" required><br>
+
+                <button type="submit">Submit RSO</button>
+                <p id="create-rso-message"></p>
+            </form>
+        </section>
+
         <section id="pending-events">
             <h2>Pending Events</h2>
             <div id="pending-events-container">Loading pending events...</div>
