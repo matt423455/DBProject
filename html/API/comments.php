@@ -10,6 +10,7 @@ if ($method === 'GET') {
     // Fetch comments for a specific event
     $event_id = isset($_GET['event_id']) ? intval($_GET['event_id']) : 0;
     if (!$event_id) {
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['success' => false, 'message' => 'No event ID provided.']);
         exit;
     }
@@ -31,6 +32,7 @@ if ($method === 'GET') {
 } elseif ($method === 'POST') {
     // Post a new comment; user must be logged in
     if (!isset($_SESSION['user_id'])) {
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['success' => false, 'message' => 'You must be logged in to post a comment.']);
         exit;
     }
@@ -42,6 +44,7 @@ if ($method === 'GET') {
     $comment_text = isset($input['comment_text']) ? trim($input['comment_text']) : '';
     
     if (!$event_id || empty($comment_text)) {
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['success' => false, 'message' => 'Event ID and comment text are required.']);
         exit;
     }
@@ -58,6 +61,7 @@ if ($method === 'GET') {
     exit;
 } else {
     http_response_code(405);
+    header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['success' => false, 'message' => 'Method not allowed.']);
     exit;
 }
