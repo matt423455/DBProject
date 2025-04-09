@@ -9,7 +9,21 @@ if (!isset($_SESSION['user_id'])) {
 
 require __DIR__ . '/config.php';
 
-$query = "SELECT rso_id, name, description, university_id, created_by, is_active FROM RSO";
+// SQL query that joins the RSO table with RSO_Members to count members.
+// It groups by rso_id and filters out RSOs with fewer than 5 members.
+$query = "SELECT 
+            r.rso_id, 
+            r.name, 
+            r.description, 
+            r.university_id, 
+            r.created_by, 
+            r.is_active,
+            COUNT(m.user_id) AS memberCount
+          FROM RSO r
+          LEFT JOIN RSO_Members m ON r.rso_id = m.rso_id
+          GROUP BY r.rso_id
+          HAVING memberCount >= 5";
+
 $result = $conn->query($query);
 
 $rsos = [];

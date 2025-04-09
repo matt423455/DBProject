@@ -52,10 +52,54 @@ $created_by = $_SESSION['user_id'];
 $stmt = $conn->prepare("INSERT INTO RSO (name, description, university_id, created_by, is_active) VALUES (?, ?, ?, ?, 1)");
 $stmt->bind_param("ssii", $name, $description, $university_id, $created_by);
 $stmt->execute();
-if ($stmt->affected_rows > 0) {
-    echo json_encode(['success' => true, 'message' => 'RSO created successfully.']);
-} else {
+if ($stmt->affected_rows <= 0) {
     echo json_encode(['success' => false, 'message' => 'Error creating RSO: ' . $conn->error]);
+    exit;
 }
+$rso_id = $stmt->insert_id;
 $stmt->close();
+
+// For each valid email, ensure that the user exists in the Users table and then add them to RSO_Members.
+foreach ($valid_members as $email) {
+    // Check if a user with this email already exists.
+    $stmt = $conn->prepare("SELECT user_id FROM Users WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows > 0) {
+        // Retrieve the existing user's ID.
+        $stmt->bind_result($user_id);
+        $stmt->fetch();
+        $stmt->close();
+    } else {
+        $stmt->close();
+        // Create a new user.
+        $username = uniqid('user_'); // Generate a random username.
+        $password = 'test';      // Plain text password as per instructions.
+        $hashedPass = password_hash($password, PASSWORD_DEFAULT);
+        $role = 'student';
+        $user_university_id = 1;       // Hardcoded university id as instructed.
+        
+        $stmt = $conn->prepare("INSERT INTO Users (username, email, password, role, university_id) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssi", $username, $email, $hashedPass, $role, $user_university_id);
+        $stmt->execute();
+        if ($stmt->affected_rows <= 0) {
+            // If the user insert fails, skip adding this member.
+            $stmt->close();
+            continue;
+        }
+        $user_id = $stmt->insert_id;
+        $stmt->close();
+    }
+    
+    // Insert the user into the RSO_Members table.
+    $rso_role = 'member';
+    $stmt = $conn->prepare("INSERT INTO RSO_Members (rso_id, user_id, role) VALUES (?, ?, ?)");
+    $stmt->bind_param("iis", $rso_id, $user_id, $rso_role);
+    $stmt->execute();
+    $stmt->close();
+}
+
+echo json_encode(['success' => true, 'message' => 'RSO created successfully with members.']);
+$conn->close();
 ?>
