@@ -1,6 +1,8 @@
 <?php
 // checkMembership.php
-
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 header('Content-Type: application/json');
 
 // Include your database connection file.
@@ -29,7 +31,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute();
         
         // Get the result set from the statement
-        $result = $stmt->get_result();
+        if (method_exists($stmt, 'get_result')) {
+            $result = $stmt->get_result();
+            $inRSO = ($result->num_rows > 0);
+        } else 
+        {
+            // Fallback method using store_result() and num_rows
+            $stmt->store_result();
+            $inRSO = ($stmt->num_rows > 0);
+        }
 
         // Check if any row was returned
         if ($result->num_rows > 0) {
