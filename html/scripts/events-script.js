@@ -1,10 +1,13 @@
 // events-script.js
 
 // Fetch and display user data
+let currentUser;
 async function fetchUserData() {
     try {
         let res = await fetch("API/user.php"); // Adjust API path if needed
         let data = await res.json();
+
+        currentUser = data;
 
         if (data.success) {
             document.getElementById("user-greeting").textContent = `Hello, ${data.user.username}`;
