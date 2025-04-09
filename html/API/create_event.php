@@ -40,6 +40,22 @@ if ($event_visibility === 'RSO' && $rso_id === '') {
 $created_by = $_SESSION['user_id'];
 $approved   = 0; // New events are pending approval
 
+// Check for conflicting event
+$conflictStmt = $conn->prepare("SELECT * FROM Event WHERE event_date = ? AND event_time = ? AND location = ?");
+$conflictStmt->bind_param("sss", $event_date, $event_time, $location);
+$conflictStmt->execute();
+$conflictResult = $conflictStmt->get_result();
+
+if ($conflictResult->num_rows > 0) {
+    $conflictEvent = $conflictResult->fetch_assoc();
+    echo json_encode([
+        'success' => false,
+        'message' => "Conflict with existing event: '{$conflictEvent['name']}' on {$conflictEvent['event_date']} at {$conflictEvent['event_time']} in {$conflictEvent['location']}."
+    ]);
+    exit;
+}
+$conflictStmt->close();
+
 // Note the format string "sssssisssiii":
 $stmt = $conn->prepare("INSERT INTO Event (name, event_category, description, event_date, event_time, location, contact_phone, contact_email, event_visibility, rso_id, created_by, approved) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 $stmt->bind_param("sssssisssiii", $name, $event_category, $description, $event_date, $event_time, $location, $contact_phone, $contact_email, $event_visibility, $rso_id, $created_by, $approved);
