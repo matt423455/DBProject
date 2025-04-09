@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", fetchUserData);
 
 async function checkMembership(userId, rsoId) {
     try {
-        const response = await fetch('checkMembership.php', {
+        const response = await fetch('API/checkMembership.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
