@@ -86,7 +86,7 @@ if (empty($managedRSOs)) {
       const details = document.getElementById('event-details').value.trim();
       const eventDate = document.getElementById('event-date').value.trim();
       const eventTime = document.getElementById('event-time').value.trim();
-      const locationId = document.getElementById('location').value.trim();
+      const locationId = document.getElementById('location-id').value.trim();
       const contactPhone = document.getElementById('contact-phone').value.trim();
       const contactEmail = document.getElementById('contact-email').value.trim();
       const visibility = document.getElementById('event-visibility').value.trim();
@@ -109,7 +109,7 @@ if (empty($managedRSOs)) {
             description: details,
             event_date: eventDate,
             event_time: eventTime,
-            location: location,
+            location: locationId,
             contact_phone: contactPhone,
             contact_email: contactEmail,
             event_visibility: visibility
